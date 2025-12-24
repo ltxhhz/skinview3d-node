@@ -2,8 +2,13 @@
 	"name": "skinview3d",
 	"version": "3.4.1",
 	"description": "Three.js powered Minecraft skin viewer",
-	"main": "libs/skinview3d.js",
+	"main": "libs/skinview3d.cjs",
 	"type": "module",
+	"exports": {
+		"import": "./libs/skinview3d.mjs",
+		"require": "./libs/skinview3d.cjs",
+		"types": "./libs/skinview3d.d.ts"
+	},
 	"scripts": {
 		"clean": "rimraf libs bundles",
 		"build:modules": "tsc -p .",
@@ -43,11 +48,14 @@
 	],
 	"dependencies": {
 		"@types/three": "^0.156.0",
+		"pngjs": "^7.0.0",
+		"skia-canvas": "^3.0.8",
 		"skinview-utils": "^0.7.1",
 		"three": "^0.156.0"
 	},
 	"devDependencies": {
 		"@rollup/plugin-node-resolve": "^15.0.2",
+		"@rollup/plugin-typescript": "^8.5.0",
 		"@swc/core": "^1.3.53",
 		"@typescript-eslint/eslint-plugin": "^8.31.1",
 		"@typescript-eslint/parser": "^8.31.1",

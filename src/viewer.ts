@@ -1,4 +1,5 @@
 import {
+	canvas2DataTexture,
 	inferModelType,
 	isTextureSource,
 	loadCapeToCanvas,
@@ -9,7 +10,8 @@ import {
 	type ModelType,
 	type RemoteImage,
 	type TextureSource,
-} from "skinview-utils";
+} from "./utils/index.js";
+
 import {
 	Color,
 	type ColorRepresentation,
@@ -24,13 +26,16 @@ import {
 	WebGLRenderer,
 	AmbientLight,
 	type Mapping,
-	CanvasTexture,
+	DataTexture,
 	WebGLRenderTarget,
 	FloatType,
 	DepthTexture,
 	Clock,
 	Object3D,
 	ColorManagement,
+	LinearFilter,
+	RGBAFormat,
+	UnsignedByteType,
 } from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer.js";
@@ -41,6 +46,8 @@ import { FXAAShader } from "three/examples/jsm/shaders/FXAAShader.js";
 import { PlayerAnimation } from "./animation.js";
 import { type BackEquipment, PlayerObject } from "./model.js";
 import { NameTagObject } from "./nametag.js";
+import { Canvas } from "skia-canvas";
+import gl from 'gl'
 
 export interface LoadOptions {
 	/**
@@ -103,8 +110,8 @@ export interface SkinViewerOptions {
 	 *
 	 * @defaultValue If unspecified, a new canvas element will be created.
 	 */
-	canvas?: HTMLCanvasElement;
-
+	canvas?: Canvas;
+	ctx?: ReturnType<typeof gl>;
 	/**
 	 * The CSS width of the canvas.
 	 */
@@ -123,7 +130,7 @@ export interface SkinViewerOptions {
 	 *
 	 * @defaultValue `"match-device"`
 	 */
-	pixelRatio?: number | "match-device";
+	pixelRatio?: number;
 
 	/**
 	 * The skin texture of the player.
@@ -255,7 +262,8 @@ export class SkinViewer {
 	/**
 	 * The canvas where the renderer draws its output.
 	 */
-	readonly canvas: HTMLCanvasElement;
+	readonly canvas: Canvas;
+	readonly ctx: ReturnType<typeof gl>
 
 	readonly scene: Scene;
 
@@ -268,7 +276,7 @@ export class SkinViewer {
 	 *
 	 * @see {@link https://threejs.org/docs/#examples/en/controls/OrbitControls | OrbitControls - three.js docs}
 	 */
-	readonly controls: OrbitControls;
+	// readonly controls: OrbitControls;
 
 	/**
 	 * The player object.
@@ -288,9 +296,9 @@ export class SkinViewer {
 	readonly renderPass: RenderPass;
 	readonly fxaaPass: ShaderPass;
 
-	readonly skinCanvas: HTMLCanvasElement;
-	readonly capeCanvas: HTMLCanvasElement;
-	readonly earsCanvas: HTMLCanvasElement;
+	readonly skinCanvas: Canvas
+	readonly capeCanvas: Canvas
+	readonly earsCanvas: Canvas
 	private skinTexture: Texture | null = null;
 	private capeTexture: Texture | null = null;
 	private earsTexture: Texture | null = null;
@@ -320,21 +328,21 @@ export class SkinViewer {
 	private clock: Clock;
 
 	private animationID: number | null;
-	private onContextLost: (event: Event) => void;
-	private onContextRestored: () => void;
+	// private onContextLost: (event: Event) => void;
+	// private onContextRestored: () => void;
 
-	private _pixelRatio: number | "match-device";
+	private _pixelRatio: number;
 	private devicePixelRatioQuery: MediaQueryList | null;
-	private onDevicePixelRatioChange: () => void;
+	// private onDevicePixelRatioChange: () => void;
 
 	private _nameTag: NameTagObject | null = null;
 
 	constructor(options: SkinViewerOptions = {}) {
-		this.canvas = options.canvas === undefined ? document.createElement("canvas") : options.canvas;
-
-		this.skinCanvas = document.createElement("canvas");
-		this.capeCanvas = document.createElement("canvas");
-		this.earsCanvas = document.createElement("canvas");
+		this.canvas = options.canvas || new Canvas;
+		this.ctx = options.ctx || gl(300,300,{preserveDrawingBuffer:options.preserveDrawingBuffer})
+		this.skinCanvas = new Canvas
+		this.capeCanvas = new Canvas
+		this.earsCanvas = new Canvas
 
 		this.scene = new Scene();
 		this.camera = new PerspectiveCamera();
@@ -344,40 +352,44 @@ export class SkinViewer {
 		ColorManagement.enabled = false;
 
 		this.renderer = new WebGLRenderer({
-			canvas: this.canvas,
+			canvas: this.canvas as any,
+			context: this.ctx,
 			preserveDrawingBuffer: options.preserveDrawingBuffer === true, // default: false
 		});
 
-		this.onDevicePixelRatioChange = () => {
-			this.renderer.setPixelRatio(window.devicePixelRatio);
-			this.updateComposerSize();
+		// this.onDevicePixelRatioChange = () => {
+		// 	this.renderer.setPixelRatio(window.devicePixelRatio);
+		// 	this.updateComposerSize();
 
-			if (this._pixelRatio === "match-device") {
-				this.devicePixelRatioQuery = matchMedia(`(resolution: ${window.devicePixelRatio}dppx)`);
-				this.devicePixelRatioQuery.addEventListener("change", this.onDevicePixelRatioChange, { once: true });
-			}
-		};
-		if (options.pixelRatio === undefined || options.pixelRatio === "match-device") {
-			this._pixelRatio = "match-device";
-			this.devicePixelRatioQuery = matchMedia(`(resolution: ${window.devicePixelRatio}dppx)`);
-			this.devicePixelRatioQuery.addEventListener("change", this.onDevicePixelRatioChange, { once: true });
-			this.renderer.setPixelRatio(window.devicePixelRatio);
-		} else {
-			this._pixelRatio = options.pixelRatio;
+		// 	if (this._pixelRatio === "match-device") {
+		// 		this.devicePixelRatioQuery = matchMedia(`(resolution: ${window.devicePixelRatio}dppx)`);
+		// 		this.devicePixelRatioQuery.addEventListener("change", this.onDevicePixelRatioChange, { once: true });
+		// 	}
+		// };
+		// if (options.pixelRatio === undefined || options.pixelRatio === "match-device") {
+		// 	this._pixelRatio = "match-device";
+		// 	this.devicePixelRatioQuery = matchMedia(`(resolution: ${window.devicePixelRatio}dppx)`);
+		// 	this.devicePixelRatioQuery.addEventListener("change", this.onDevicePixelRatioChange, { once: true });
+		// 	this.renderer.setPixelRatio(window.devicePixelRatio);
+		// } else {
+			this._pixelRatio = options.pixelRatio || 1;
 			this.devicePixelRatioQuery = null;
-			this.renderer.setPixelRatio(options.pixelRatio);
-		}
+			this.renderer.setPixelRatio(1);
+		// }
 
 		this.renderer.setClearColor(0, 0);
 
-		let renderTarget;
-		if (this.renderer.capabilities.isWebGL2) {
+		// if (this.renderer.capabilities.isWebGL2) {
 			// Use float precision depth if possible
 			// see https://github.com/bs-community/skinview3d/issues/111
-			renderTarget = new WebGLRenderTarget(0, 0, {
-				depthTexture: new DepthTexture(0, 0, FloatType),
+		const renderTarget = new WebGLRenderTarget(0, 0, {
+				// depthTexture: new DepthTexture(0, 0, FloatType),
+				minFilter: LinearFilter,
+				magFilter: LinearFilter,
+				format: RGBAFormat,
+				type: UnsignedByteType,
 			});
-		}
+		// }
 		this.composer = new EffectComposer(this.renderer, renderTarget);
 		this.renderPass = new RenderPass(this.scene, this.camera);
 		this.fxaaPass = new ShaderPass(FXAAShader);
@@ -392,14 +404,14 @@ export class SkinViewer {
 		this.playerWrapper.add(this.playerObject);
 		this.scene.add(this.playerWrapper);
 
-		this.controls = new OrbitControls(this.camera, this.canvas);
-		this.controls.enablePan = false; // disable pan by default
-		this.controls.minDistance = 10;
-		this.controls.maxDistance = 256;
+		// this.controls = new OrbitControls(this.camera, this.canvas);
+		// this.controls.enablePan = false; // disable pan by default
+		// this.controls.minDistance = 10;
+		// this.controls.maxDistance = 256;
 
-		if (options.enableControls === false) {
-			this.controls.enabled = false;
-		}
+		// if (options.enableControls === false) {
+		// 	this.controls.enabled = false;
+		// }
 
 		if (options.skin !== undefined) {
 			this.loadSkin(options.skin, {
@@ -444,55 +456,55 @@ export class SkinViewer {
 			this.animationID = window.requestAnimationFrame(() => this.draw());
 		}
 
-		this.onContextLost = (event: Event) => {
-			event.preventDefault();
-			if (this.animationID !== null) {
-				window.cancelAnimationFrame(this.animationID);
-				this.animationID = null;
-			}
-		};
+		// this.onContextLost = (event: Event) => {
+		// 	event.preventDefault();
+		// 	if (this.animationID !== null) {
+		// 		window.cancelAnimationFrame(this.animationID);
+		// 		this.animationID = null;
+		// 	}
+		// };
 
-		this.onContextRestored = () => {
-			this.renderer.setClearColor(0, 0); // Clear color might be lost
-			if (!this._renderPaused && !this._disposed && this.animationID === null) {
-				this.animationID = window.requestAnimationFrame(() => this.draw());
-			}
-		};
+		// this.onContextRestored = () => {
+		// 	this.renderer.setClearColor(0, 0); // Clear color might be lost
+		// 	if (!this._renderPaused && !this._disposed && this.animationID === null) {
+		// 		this.animationID = window.requestAnimationFrame(() => this.draw());
+		// 	}
+		// };
 
-		this.canvas.addEventListener("webglcontextlost", this.onContextLost, false);
-		this.canvas.addEventListener("webglcontextrestored", this.onContextRestored, false);
-		this.canvas.addEventListener(
-			"mousedown",
-			() => {
-				this.isUserRotating = true;
-			},
-			false
-		);
-		this.canvas.addEventListener(
-			"mouseup",
-			() => {
-				this.isUserRotating = false;
-			},
-			false
-		);
-		this.canvas.addEventListener(
-			"touchmove",
-			e => {
-				if (e.touches.length === 1) {
-					this.isUserRotating = true;
-				} else {
-					this.isUserRotating = false;
-				}
-			},
-			false
-		);
-		this.canvas.addEventListener(
-			"touchend",
-			() => {
-				this.isUserRotating = false;
-			},
-			false
-		);
+		// this.canvas.addEventListener("webglcontextlost", this.onContextLost, false);
+		// this.canvas.addEventListener("webglcontextrestored", this.onContextRestored, false);
+		// this.canvas.addEventListener(
+		// 	"mousedown",
+		// 	() => {
+		// 		this.isUserRotating = true;
+		// 	},
+		// 	false
+		// );
+		// this.canvas.addEventListener(
+		// 	"mouseup",
+		// 	() => {
+		// 		this.isUserRotating = false;
+		// 	},
+		// 	false
+		// );
+		// this.canvas.addEventListener(
+		// 	"touchmove",
+		// 	e => {
+		// 		if (e.touches.length === 1) {
+		// 			this.isUserRotating = true;
+		// 		} else {
+		// 			this.isUserRotating = false;
+		// 		}
+		// 	},
+		// 	false
+		// );
+		// this.canvas.addEventListener(
+		// 	"touchend",
+		// 	() => {
+		// 		this.isUserRotating = false;
+		// 	},
+		// 	false
+		// );
 	}
 
 	private updateComposerSize(): void {
@@ -507,7 +519,7 @@ export class SkinViewer {
 		if (this.skinTexture !== null) {
 			this.skinTexture.dispose();
 		}
-		this.skinTexture = new CanvasTexture(this.skinCanvas);
+		this.skinTexture = canvas2DataTexture(this.skinCanvas);
 		this.skinTexture.magFilter = NearestFilter;
 		this.skinTexture.minFilter = NearestFilter;
 		this.playerObject.skin.map = this.skinTexture;
@@ -517,7 +529,7 @@ export class SkinViewer {
 		if (this.capeTexture !== null) {
 			this.capeTexture.dispose();
 		}
-		this.capeTexture = new CanvasTexture(this.capeCanvas);
+		this.capeTexture = canvas2DataTexture(this.capeCanvas);
 		this.capeTexture.magFilter = NearestFilter;
 		this.capeTexture.minFilter = NearestFilter;
 		this.playerObject.cape.map = this.capeTexture;
@@ -528,7 +540,7 @@ export class SkinViewer {
 		if (this.earsTexture !== null) {
 			this.earsTexture.dispose();
 		}
-		this.earsTexture = new CanvasTexture(this.earsCanvas);
+		this.earsTexture = canvas2DataTexture(this.earsCanvas);
 		this.earsTexture.magFilter = NearestFilter;
 		this.earsTexture.minFilter = NearestFilter;
 		this.playerObject.ears.map = this.earsTexture;
@@ -675,11 +687,11 @@ export class SkinViewer {
 			this._animation.update(this.playerObject, dt);
 		}
 		if (this.autoRotate) {
-			if (!(this.controls.enableRotate && this.isUserRotating)) {
+			// if (!(this.controls.enableRotate && this.isUserRotating)) {
 				this.playerWrapper.rotation.y += dt * this.autoRotateSpeed;
-			}
+			// }
 		}
-		this.controls.update();
+		// this.controls.update();
 		this.render();
 		this.animationID = window.requestAnimationFrame(() => this.draw());
 	}
@@ -702,20 +714,20 @@ export class SkinViewer {
 	dispose(): void {
 		this._disposed = true;
 
-		this.canvas.removeEventListener("webglcontextlost", this.onContextLost, false);
-		this.canvas.removeEventListener("webglcontextrestored", this.onContextRestored, false);
+		// this.canvas.removeEventListener("webglcontextlost", this.onContextLost, false);
+		// this.canvas.removeEventListener("webglcontextrestored", this.onContextRestored, false);
 
-		if (this.devicePixelRatioQuery !== null) {
-			this.devicePixelRatioQuery.removeEventListener("change", this.onDevicePixelRatioChange);
-			this.devicePixelRatioQuery = null;
-		}
+		// if (this.devicePixelRatioQuery !== null) {
+		// 	this.devicePixelRatioQuery.removeEventListener("change", this.onDevicePixelRatioChange);
+		// 	this.devicePixelRatioQuery = null;
+		// }
 
 		if (this.animationID !== null) {
 			window.cancelAnimationFrame(this.animationID);
 			this.animationID = null;
 		}
 
-		this.controls.dispose();
+		// this.controls.dispose();
 		this.renderer.dispose();
 		this.resetSkin();
 		this.resetCape();
@@ -825,25 +837,25 @@ export class SkinViewer {
 		this.adjustCameraDistance();
 	}
 
-	get pixelRatio(): number | "match-device" {
+	get pixelRatio(): number {
 		return this._pixelRatio;
 	}
 
-	set pixelRatio(newValue: number | "match-device") {
-		if (newValue === "match-device") {
-			if (this._pixelRatio !== "match-device") {
-				this._pixelRatio = newValue;
-				this.onDevicePixelRatioChange();
-			}
-		} else {
-			if (this._pixelRatio === "match-device" && this.devicePixelRatioQuery !== null) {
-				this.devicePixelRatioQuery.removeEventListener("change", this.onDevicePixelRatioChange);
-				this.devicePixelRatioQuery = null;
-			}
+	set pixelRatio(newValue: number) {
+		// if (newValue === "match-device") {
+		// 	if (this._pixelRatio !== "match-device") {
+		// 		this._pixelRatio = newValue;
+		// 		this.onDevicePixelRatioChange();
+		// 	}
+		// } else {
+		// 	if (this._pixelRatio === "match-device" && this.devicePixelRatioQuery !== null) {
+		// 		this.devicePixelRatioQuery.removeEventListener("change", this.onDevicePixelRatioChange);
+		// 		this.devicePixelRatioQuery = null;
+		// 	}
 			this._pixelRatio = newValue;
 			this.renderer.setPixelRatio(newValue);
 			this.updateComposerSize();
-		}
+		// }
 	}
 
 	/**
@@ -906,6 +918,6 @@ export class SkinViewer {
 			newVal.position.y = 20;
 		}
 
-		this._nameTag = newVal;
+		this._nameTag = newVal as NameTagObject | null;
 	}
 }

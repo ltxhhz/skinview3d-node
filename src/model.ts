@@ -1,4 +1,4 @@
-import type { ModelType } from "skinview-utils";
+import type { ModelType } from "./utils/index.js";
 import {
 	BoxGeometry,
 	BufferAttribute,
