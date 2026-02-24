@@ -2,7 +2,12 @@ import { PlayerObject } from 'model.js';
 
 export abstract class PlayerAnimation {
 	// 相对倍率
-	speed = 1;
+	multiple = 1;
+	defaultCamera = [
+		[25, 22, 25], //左前方俯视
+		[0, 0, 0]
+	];
+	delay = 5;
 	/**
 	 * 渲染某一帧的姿态
 	 * @param player 播放器对象
@@ -43,7 +48,7 @@ export class FunctionAnimation extends PlayerAnimation {
 export class IdleAnimation extends PlayerAnimation {
 	protected animate(player: PlayerObject, progress: number): void {
 		// Multiply by animation's natural speed
-		const t = progress * 2 * Math.PI * this.speed;
+		const t = progress * 2 * Math.PI * this.multiple;
 
 		// Arm swing
 		const basicArmRotationZ = Math.PI * 0.02;
@@ -67,7 +72,7 @@ export class WalkingAnimation extends PlayerAnimation {
 	protected animate(player: PlayerObject, progress: number): void {
 		// 基础周期：0 -> 2PI
 		// 所有的动作都基于这个 base
-		const t = progress * 2 * Math.PI * this.speed;
+		const t = progress * 2 * Math.PI * this.multiple;
 
 		// 肢体摆动 (频率 1x)
 		player.skin.leftLeg.rotation.x = Math.sin(t) * 0.5;
@@ -97,7 +102,7 @@ export class WalkingAnimation extends PlayerAnimation {
 export class RunningAnimation extends PlayerAnimation {
 	protected animate(player: PlayerObject, progress: number): void {
 		// 基础周期：0 -> 2PI
-		const t = progress * 2 * Math.PI * this.speed + Math.PI * 0.5; // 保留相位偏移
+		const t = progress * 2 * Math.PI * this.multiple + Math.PI * 0.5; // 保留相位偏移
 
 		// Leg swing with larger amplitude
 		player.skin.leftLeg.rotation.x = Math.cos(t + Math.PI) * 1.3;
@@ -122,19 +127,20 @@ export class RunningAnimation extends PlayerAnimation {
 		player.cape.rotation.x = Math.sin(t * 2) * 0.1 + Math.PI * 0.3;
 		// What about head shaking?
 		// You shouldn't glance right and left when running dude :P
+		if (player.nameTag) player.nameTag.position.y = player.position.y + 20;
 	}
 }
 function clamp(num: number, min: number, max: number): number {
-	return num <= min ? min : num >= max ? max : num;
+	return Math.min(Math.max(num, min), max);
 }
 
 export class FlyingAnimation extends PlayerAnimation {
-	speed: number = 2;
+	multiple: number = 2;
 	protected animate(player: PlayerObject, progress: number): void {
 		// Body rotation finishes in 0.5s
 		// Elytra expansion finishes in 3.3s
 
-		const t = progress * Math.PI * 2 * this.speed;
+		const t = progress * Math.PI * 2 * this.multiple;
 		const startProgress = clamp((t * t) / 100, 0, 1);
 
 		player.rotation.x = (startProgress * Math.PI) / 2;
@@ -163,7 +169,7 @@ export class WaveAnimation extends PlayerAnimation {
 	}
 
 	protected animate(player: PlayerObject, progress: number): void {
-		const t = progress * 2 * Math.PI * this.speed;
+		const t = progress * 2 * Math.PI * this.multiple;
 
 		const targetArm = this.whichArm === 'left' ? player.skin.leftArm : player.skin.rightArm;
 		targetArm.rotation.x = 180;
@@ -194,6 +200,11 @@ export class CrouchAnimation extends PlayerAnimation {
 	 */
 	isRunningHitAnimation: boolean = false;
 
+	/**
+	 * 攻击动画的次数
+	 */
+	hitCycles = 8;
+
 	protected animate(player: PlayerObject, progress: number): void {
 		// 1. 计算蹲下系数 (crouchFactor)
 		// 范围 0.0 (站立) 到 1.0 (完全蹲下)
@@ -206,7 +217,7 @@ export class CrouchAnimation extends PlayerAnimation {
 			// progress: 0 -> 0.5 -> 1.0
 			// angle:    0 -> PI  -> 2PI
 			// sin:      0 -> 1   -> 0
-			const t = progress * 2 * Math.PI * this.speed;
+			const t = progress * 2 * Math.PI * this.multiple;
 			crouchFactor = Math.abs(Math.sin(t / 2));
 		}
 
@@ -271,10 +282,16 @@ export class CrouchAnimation extends PlayerAnimation {
 
 		// --- 攻击 (Hit) 动画逻辑 ---
 		if (this.isRunningHitAnimation) {
+			if (crouchFactor !== 1) {
+				// 只在蹲下时播放
+				if (crouchFactor === 0) {
+					player.skin.body.rotation.y = 0;
+				}
+				return;
+			}
 			// 为了保证循环完美，攻击频率必须是主循环的整数倍。
 			// 比如主循环是蹲下再起来 (1次)，期间挥动 2 次手。
-			const hitCycles = Math.round(2 * this.speed);
-			const t = progress * 2 * Math.PI * hitCycles;
+			const t = progress * 2 * Math.PI * this.hitCycles;
 
 			// 基础手臂旋转 Z
 			const basicArmRotationZ = 0.01 * Math.PI + 0.06;
@@ -303,9 +320,9 @@ export class CrouchAnimation extends PlayerAnimation {
 	}
 }
 export class HitAnimation extends PlayerAnimation {
-	speed: number = 2;
+	multiple: number = 2;
 	protected animate(player: PlayerObject, progress: number): void {
-		const t = progress * Math.PI * 2 * this.speed;
+		const t = progress * Math.PI * 2 * this.multiple;
 		player.skin.rightArm.rotation.x = -0.4537860552 * 2 + 2 * Math.sin(t + Math.PI) * 0.3;
 		const basicArmRotationZ = 0.01 * Math.PI + 0.06;
 		player.skin.rightArm.rotation.z = -Math.cos(t) * 0.403 + basicArmRotationZ;
@@ -314,5 +331,182 @@ export class HitAnimation extends PlayerAnimation {
 		player.skin.leftArm.rotation.z = -Math.cos(t) * 0.015 + 0.13 - 0.05;
 		player.skin.leftArm.position.z = Math.cos(t) * 0.3;
 		player.skin.leftArm.position.x = 5 - Math.cos(t) * 0.05;
+	}
+}
+
+export class SpinUpAnimation extends PlayerAnimation {
+	maxHeight = 50;
+	rotationTurns = 6;
+	/**分头行动 */
+	headOff = false;
+	protected animate(player: PlayerObject, progress: number): void {
+		// --- 1. 手臂平举动画 (前 30% 时间) ---
+		const armProgress = clamp(progress / 0.3, 0, 1);
+
+		// 使用 sin(x * PI/2) 可以在 x=1 时精确到达 1，实现平滑过渡
+		const armSpreadFactor = Math.sin((armProgress * Math.PI) / 2);
+
+		player.skin.leftArm.rotation.z = armSpreadFactor * (Math.PI / 2);
+		player.skin.rightArm.rotation.z = -armSpreadFactor * (Math.PI / 2);
+
+		// --- 2. 身体旋转 ---
+		player.rotation.y = Math.pow(progress, 2) * (Math.PI * 2) * this.rotationTurns;
+
+		const a = Math.pow(clamp(progress * 2, 0, 1), 2);
+		player.cape.rotation.x = a * (Math.PI / 2);
+		player.elytra.rotation.x = a * (Math.PI / 2 - 0.2); // -0.2 让鞘翅看起来不偏上
+
+		// --- 3. 身体上升 (后 70% 时间) ---
+		const flyStartThreshold = 0.3;
+		let riseHeight = 0;
+
+		if (progress > flyStartThreshold) {
+			// 将 0.3 ~ 1.0 映射为 0 ~ 1
+			const flyProgress = (progress - flyStartThreshold) / (1 - flyStartThreshold);
+
+			riseHeight = Math.pow(flyProgress, 3) * this.maxHeight;
+		}
+		if (this.headOff) player.skin.head.position.y = riseHeight;
+		else player.position.y = riseHeight;
+
+		if (player.nameTag) player.nameTag.position.y = riseHeight + 20;
+	}
+}
+
+export class RotateAnimation extends PlayerAnimation {
+	protected animate(player: PlayerObject, progress: number): void {
+		const t = progress * 2 * Math.PI * this.multiple;
+		player.rotation.y = t;
+		player.skin.leftArm.rotation.z = 0.1;
+		player.skin.rightArm.rotation.z = -0.1;
+	}
+}
+
+export class NodAnimation extends PlayerAnimation {
+	delay = 2;
+	amp = 0.5;
+	protected animate(player: PlayerObject, progress: number): void {
+		const t = progress * 2 * Math.PI * this.multiple;
+		player.skin.head.rotation.x = Math.sin(t) * this.amp;
+	}
+}
+// 失败品
+class FlailAnimation1 extends PlayerAnimation {
+	multiple = 2;
+	step = 0;
+	protected animate(player: PlayerObject, progress: number): void {
+		const t = progress * 2 * Math.PI * this.multiple + Math.PI / 2;
+
+		const rad = Math.cos(t) * Math.PI * 0.5;
+		player.skin.leftLeg.rotation.x = -rad;
+		player.skin.rightLeg.rotation.x = rad;
+
+		// x Math.PI/2 -> Math.PI -> 0 -> Math.PI -> y 0 -> Math.PI -> x 0 -> Math.PI/2
+		//             1           2   2          2      2          2      1
+		// const t1 = (progress - 1/3) * 2 * Math.PI
+		if (this.step == 0 && progress > 7 / 12) {
+			this.step++;
+		} else if (this.step == 1 && progress > 11 / 12) {
+			this.step++;
+		}
+		if (this.step == 1) {
+			const rz = Math.PI / 2;
+			player.skin.leftArm.rotation.z = rz;
+			player.skin.rightArm.rotation.z = -rz;
+			player.skin.leftArm.rotation.y = rad;
+			player.skin.rightArm.rotation.y = rad;
+			player.skin.leftArm.rotation.x = player.skin.rightArm.rotation.x = 0;
+		} else {
+			const rz = 0.3;
+			player.skin.leftArm.rotation.z = rz;
+			player.skin.rightArm.rotation.z = -rz;
+			player.skin.leftArm.rotation.x = rad;
+			player.skin.rightArm.rotation.x = -rad;
+		}
+
+		player.position.y = Math.cos(t * 2) * 1.2;
+		player.position.x = Math.cos(t) * 0.15;
+	}
+}
+
+// 辅助函数：线性插值
+// 当 t=0 返回 start，t=1 返回 end，中间平滑过渡
+function lerp(start: number, end: number, t: number): number {
+	return start + (end - start) * t;
+}
+
+export class FlailAnimation extends PlayerAnimation {
+	multiple = 2;
+	delay = 4;
+	protected animate(player: PlayerObject, progress: number): void {
+		// 1. 定义时间参数
+		// highFreq: 高频震动（用于手脚快速摆动）
+		const highFreq = progress * 2 * Math.PI * this.multiple;
+
+		// lowFreq: 低频变化（用于控制状态过渡），0 -> 1 -> 0
+		// 使用 Math.sin(progress * Math.PI) 可以保证首尾都是 0 (跑步态)，中间是 1 (发疯态)
+		// 这样动画循环时是完美的：跑 -> 疯 -> 跑
+		const blendFactor = Math.sin(progress * Math.PI);
+
+		// 基础摆动幅度
+		const swingRad = Math.sin(highFreq) * 1.9;
+
+		// === 2. 腿部动作 (保持一直在跑) ===
+		// 腿部不需要过渡，一直保持快速奔跑
+		player.skin.leftLeg.rotation.x = -swingRad * 0.8;
+		player.skin.rightLeg.rotation.x = swingRad * 0.8;
+
+		// === 3. 手臂动作 (核心修改：平滑混合) ===
+
+		// 状态 A: 跑步时手臂自然下垂 (Z轴接近0)
+		const armZ_Run = 0.2;
+		// 状态 B: 发疯时手臂平举 (Z轴 90度/PI/2)
+		const armZ_Flail = Math.PI / 2 + 0.3;
+
+		// 动态计算当前的 Z 轴角度：根据 blendFactor 在两者间平滑变化
+		const currentArmZ = lerp(armZ_Run, armZ_Flail, blendFactor);
+
+		player.skin.leftArm.rotation.z = currentArmZ;
+		player.skin.rightArm.rotation.z = -currentArmZ;
+
+		// 旋转轴混合：
+		// 当 blendFactor 为 0 时，完全使用 X 轴旋转 (跑步摆臂)
+		// 当 blendFactor 为 1 时，完全使用 Y 轴旋转 (直升机乱挥)
+		// 中间状态会自动混合两个轴的旋转
+
+		// X轴分量：跑步时满额，发疯时归零
+		const rotX = swingRad * (1 - blendFactor);
+		// Y轴分量：跑步时归零，发疯时满额
+		const rotY = swingRad * blendFactor;
+
+		player.skin.leftArm.rotation.x = rotX;
+		player.skin.rightArm.rotation.x = -rotX;
+
+		player.skin.leftArm.rotation.y = rotY;
+		player.skin.rightArm.rotation.y = rotY;
+
+		// === 4. 头部动作 (视线画圆) ===
+		// 原理：X轴管上下，Y轴管左右。
+		// 一个用 sin，一个用 cos，频率一致，就会形成圆周运动
+		// 稍微降低一点频率(highFreq / 2)，不要晃得太晕
+		const headSpeed = highFreq * 0.5;
+		const headAmp = 0.8; // 晃动幅度
+
+		player.skin.head.rotation.y = Math.sin(headSpeed) * headAmp; // 左右
+		player.skin.head.rotation.x = Math.cos(headSpeed) * headAmp; // 上下
+		// 稍微加一点 Z 轴歪头，看起来更疯癫
+		player.skin.head.rotation.z = Math.sin(headSpeed * 0.5) * 0.1;
+
+		// === 5. 身体位移 ===
+		// 上下跳动
+		player.position.y = Math.sin(highFreq * 2) * 2;
+		// 左右胡乱位移
+		player.position.x = Math.cos(highFreq * 0.5) * 0.5;
+		// 身体稍微前倾一点
+		player.rotation.x = 0.15;
+
+		player.cape.rotation.x = Math.sin(highFreq * 2) * 0.2 + Math.PI * 0.3;
+
+		if (player.nameTag) player.nameTag.position.y = player.position.y + 20;
 	}
 }
