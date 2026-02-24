@@ -46,7 +46,7 @@ import { FXAAShader } from "three/examples/jsm/shaders/FXAAShader.js";
 import { PlayerAnimation } from "./animation.js";
 import { type BackEquipment, PlayerObject } from "./model.js";
 import { NameTagObject } from "./nametag.js";
-import { Canvas } from "skia-canvas";
+import { Canvas, ExportFormat, ExportOptions } from "skia-canvas";
 import gl from 'gl'
 
 export interface LoadOptions {
@@ -157,6 +157,8 @@ export interface SkinViewerOptions {
 	 */
 	cape?: RemoteImage | TextureSource;
 
+	capeLoadOptions?: CapeLoadOptions
+
 	/**
 	 * The ear texture of the player.
 	 *
@@ -188,7 +190,7 @@ export interface SkinViewerOptions {
 	 *
 	 * @defaultValue `false`
 	 */
-	renderPaused?: boolean;
+	// renderPaused?: boolean;
 
 	/**
 	 * The background of the scene.
@@ -305,9 +307,7 @@ export class SkinViewer {
 	private backgroundTexture: Texture | null = null;
 
 	private _disposed: boolean = false;
-	private _renderPaused: boolean = false;
 	private _zoom: number;
-	private isUserRotating: boolean = false;
 
 	/**
 	 * Whether to rotate the player along the y axis.
@@ -325,9 +325,9 @@ export class SkinViewer {
 	autoRotateSpeed: number = 1.0;
 
 	private _animation: PlayerAnimation | null;
-	private clock: Clock;
+	// private clock: Clock;
 
-	private animationID: number | null;
+	// private animationID: number | null;
 	// private onContextLost: (event: Event) => void;
 	// private onContextRestored: () => void;
 
@@ -336,6 +336,10 @@ export class SkinViewer {
 	// private onDevicePixelRatioChange: () => void;
 
 	private _nameTag: NameTagObject | null = null;
+
+	private _loadPromiseArr: any[] = [];
+
+	readonly ready: Promise<any>
 
 	constructor(options: SkinViewerOptions = {}) {
 		this.canvas = options.canvas || new Canvas;
@@ -414,18 +418,18 @@ export class SkinViewer {
 		// }
 
 		if (options.skin !== undefined) {
-			this.loadSkin(options.skin, {
+			this._loadPromiseArr.push(this.loadSkin(options.skin, {
 				model: options.model,
 				ears: options.ears === "current-skin",
-			});
+			}));
 		}
 		if (options.cape !== undefined) {
-			this.loadCape(options.cape);
+			this._loadPromiseArr.push(this.loadCape(options.cape, options.capeLoadOptions));
 		}
 		if (options.ears !== undefined && options.ears !== "current-skin") {
-			this.loadEars(options.ears.source, {
+			this._loadPromiseArr.push(this.loadEars(options.ears.source, {
 				textureType: options.ears.textureType,
-			});
+			}));
 		}
 		if (options.width !== undefined) {
 			this.width = options.width;
@@ -437,7 +441,7 @@ export class SkinViewer {
 			this.background = options.background;
 		}
 		if (options.panorama !== undefined) {
-			this.loadPanorama(options.panorama);
+			this._loadPromiseArr.push(this.loadPanorama(options.panorama));
 		}
 		if (options.nameTag !== undefined) {
 			this.nameTag = options.nameTag;
@@ -447,14 +451,7 @@ export class SkinViewer {
 		this.fov = options.fov === undefined ? 50 : options.fov;
 
 		this._animation = options.animation === undefined ? null : options.animation;
-		this.clock = new Clock();
-
-		if (options.renderPaused === true) {
-			this._renderPaused = true;
-			this.animationID = null;
-		} else {
-			this.animationID = window.requestAnimationFrame(() => this.draw());
-		}
+		// this.clock = new Clock();
 
 		// this.onContextLost = (event: Event) => {
 		// 	event.preventDefault();
@@ -505,6 +502,7 @@ export class SkinViewer {
 		// 	},
 		// 	false
 		// );
+		this.ready = Promise.allSettled(this._loadPromiseArr);
 	}
 
 	private updateComposerSize(): void {
@@ -604,7 +602,7 @@ export class SkinViewer {
 			this.recreateCapeTexture();
 
 			if (options.makeVisible !== false) {
-				this.playerObject.backEquipment = options.backEquipment === undefined ? "cape" : options.backEquipment;
+				this.playerObject.backEquipment = options.backEquipment || "cape";
 			}
 		} else {
 			return loadImage(source).then(image => this.loadCape(image, options));
@@ -681,19 +679,41 @@ export class SkinViewer {
 		}
 	}
 
-	private draw(): void {
-		const dt = this.clock.getDelta();
-		if (this._animation !== null) {
-			this._animation.update(this.playerObject, dt);
+	toRGBA(): Uint8Array {
+		const buf = new Uint8Array(this.width * this.height * 4)
+		this.ctx.readPixels(0, 0, this.width, this.height, this.ctx.RGBA, this.ctx.UNSIGNED_BYTE, buf)
+		const res = new Uint8Array(this.width * this.height * 4)
+		for (let y = 0; y < this.height; y++) {
+			for (let x = 0; x < this.width; x++) {
+				const srcIdx = ((this.height - 1 - y) * this.width + x) * 4
+				const dstIdx = (y * this.width + x) * 4
+				res[dstIdx] = buf[srcIdx]
+				res[dstIdx + 1] = buf[srcIdx + 1]
+				res[dstIdx + 2] = buf[srcIdx + 2]
+				res[dstIdx + 3] = buf[srcIdx + 3]
+			}
 		}
-		if (this.autoRotate) {
-			// if (!(this.controls.enableRotate && this.isUserRotating)) {
-				this.playerWrapper.rotation.y += dt * this.autoRotateSpeed;
-			// }
+		return res
+	}
+
+
+	toBuffer(format: ExportFormat = 'png', options?: ExportOptions){
+		const buf = this.toRGBA()
+		const outCanvas = new Canvas(this.width, this.height)
+		const ctx2d = outCanvas.getContext('2d')
+		const imageData = ctx2d.createImageData(this.width, this.height)
+		for (let y = 0; y < this.height; y++) {
+			for (let x = 0; x < this.width; x++) {
+				const srcIdx = ((this.height - 1 - y) * this.width + x) * 4
+				const dstIdx = (y * this.width + x) * 4
+				imageData.data[dstIdx] = buf[srcIdx]
+				imageData.data[dstIdx + 1] = buf[srcIdx + 1]
+				imageData.data[dstIdx + 2] = buf[srcIdx + 2]
+				imageData.data[dstIdx + 3] = buf[srcIdx + 3]
+			}
 		}
-		// this.controls.update();
-		this.render();
-		this.animationID = window.requestAnimationFrame(() => this.draw());
+		ctx2d.putImageData(imageData, 0, 0)
+		return outCanvas.toBufferSync(format, options)
 	}
 
 	/**
@@ -702,6 +722,26 @@ export class SkinViewer {
 	 */
 	render(): void {
 		this.composer.render();
+	}
+
+
+	renderAnimationLoop(frames?: number, binary?: false): (() => Uint8Array)[];
+	renderAnimationLoop(frames: number, binary: true): (() => Buffer)[];
+	renderAnimationLoop(frames = 30, binary = false) {
+		if (this._animation == null) {
+			throw new Error("No animation.");
+		}
+		return new Array(frames).fill(null).map((_, i) => {
+			return () => {
+				// this.playerObject.resetJoints();
+				// this.playerObject.position.set(0, 0, 0);
+				// this.playerObject.rotation.set(0, 0, 0);
+
+				this._animation!.render(this.playerObject, i / frames);
+				this.render()
+				return binary ? this.toBuffer('png') : this.toRGBA();
+			}
+		});
 	}
 
 	setSize(width: number, height: number): void {
@@ -722,10 +762,10 @@ export class SkinViewer {
 		// 	this.devicePixelRatioQuery = null;
 		// }
 
-		if (this.animationID !== null) {
-			window.cancelAnimationFrame(this.animationID);
-			this.animationID = null;
-		}
+		// if (this.animationID !== null) {
+		// 	window.cancelAnimationFrame(this.animationID);
+		// 	this.animationID = null;
+		// }
 
 		// this.controls.dispose();
 		this.renderer.dispose();
@@ -745,27 +785,27 @@ export class SkinViewer {
 	 * Setting this property to true will stop both rendering and animation loops.
 	 * Setting it back to false will resume them.
 	 */
-	get renderPaused(): boolean {
-		return this._renderPaused;
-	}
+	// get renderPaused(): boolean {
+	// 	return this._renderPaused;
+	// }
 
-	set renderPaused(value: boolean) {
-		this._renderPaused = value;
+	// set renderPaused(value: boolean) {
+	// 	this._renderPaused = value;
 
-		if (this._renderPaused && this.animationID !== null) {
-			window.cancelAnimationFrame(this.animationID);
-			this.animationID = null;
-			this.clock.stop();
-			this.clock.autoStart = true;
-		} else if (
-			!this._renderPaused &&
-			!this._disposed &&
-			!this.renderer.getContext().isContextLost() &&
-			this.animationID == null
-		) {
-			this.animationID = window.requestAnimationFrame(() => this.draw());
-		}
-	}
+	// 	if (this._renderPaused && this.animationID !== null) {
+	// 		window.cancelAnimationFrame(this.animationID);
+	// 		this.animationID = null;
+	// 		this.clock.stop();
+	// 		this.clock.autoStart = true;
+	// 	} else if (
+	// 		!this._renderPaused &&
+	// 		!this._disposed &&
+	// 		!this.renderer.getContext().isContextLost() &&
+	// 		this.animationID == null
+	// 	) {
+	// 		this.animationID = window.requestAnimationFrame(() => this.draw());
+	// 	}
+	// }
 
 	get width(): number {
 		return this.renderer.getSize(new Vector2()).width;
@@ -875,12 +915,12 @@ export class SkinViewer {
 			this.playerObject.resetJoints();
 			this.playerObject.position.set(0, 0, 0);
 			this.playerObject.rotation.set(0, 0, 0);
-			this.clock.stop();
-			this.clock.autoStart = true;
+			// this.clock.stop();
+			// this.clock.autoStart = true;
 		}
-		if (animation !== null) {
-			animation.progress = 0;
-		}
+		// if (animation !== null) {
+		// 	animation.progress = 0;
+		// }
 		this._animation = animation;
 	}
 
@@ -919,5 +959,6 @@ export class SkinViewer {
 		}
 
 		this._nameTag = newVal as NameTagObject | null;
+		this.playerObject.nameTag = newVal || undefined;
 	}
 }

@@ -1,3 +1,4 @@
+import { NameTagObject } from "nametag.js";
 import type { ModelType } from "./utils/index.js";
 import {
 	BoxGeometry,
@@ -476,6 +477,7 @@ export class PlayerObject extends Group {
 	readonly cape: CapeObject;
 	readonly elytra: ElytraObject;
 	readonly ears: EarsObject;
+	nameTag?: NameTagObject;
 
 	constructor() {
 		super();
