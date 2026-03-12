@@ -1,6 +1,6 @@
 {
-	"name": "skinview3d",
-	"version": "3.4.1",
+	"name": "@nas-md/skinview3d-node",
+	"version": "3.4.1-fork.9",
 	"description": "Three.js powered Minecraft skin viewer",
 	"main": "libs/skinview3d.cjs",
 	"type": "module",
@@ -23,7 +23,7 @@
 		"dev:watch:bundles": "rollup -w --no-watch.clearScreen -c --configPlugin=swc3",
 		"dev": "vite",
 		"preview": "vite preview",
-		"prepublishOnly": "npm run clean && npm run build"
+		"prepublishOnly1": "npm run clean && npm run build"
 	},
 	"repository": {
 		"type": "git",
@@ -40,7 +40,7 @@
 	"bugs": {
 		"url": "https://github.com/bs-community/skinview3d/issues"
 	},
-	"homepage": "https://github.com/bs-community/skinview3d",
+	"homepage": "https://github.com/ltxhhz/skinview3d-node",
 	"files": [
 		"libs",
 		"bundles",
@@ -54,6 +54,7 @@
 		"three": "^0.156.0"
 	},
 	"devDependencies": {
+		"@rollup/plugin-commonjs": "^21.1.0",
 		"@rollup/plugin-node-resolve": "^15.0.2",
 		"@rollup/plugin-typescript": "^8.5.0",
 		"@swc/core": "^1.3.53",

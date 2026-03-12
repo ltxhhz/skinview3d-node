@@ -768,7 +768,11 @@ export class SkinViewer {
 		// }
 
 		// this.controls.dispose();
-		this.renderer.dispose();
+		try {
+			this.renderer.dispose();
+		} catch (error) {
+			// https://github.com/mrdoob/three.js/issues/33157
+		}
 		this.resetSkin();
 		this.resetCape();
 		this.resetEars();
