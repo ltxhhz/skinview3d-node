@@ -1,6 +1,6 @@
 {
 	"name": "@nas-md/skinview3d-node",
-	"version": "3.4.1-fork.9",
+	"version": "3.4.1-fork.10",
 	"description": "Three.js powered Minecraft skin viewer",
 	"main": "libs/skinview3d.cjs",
 	"type": "module",
