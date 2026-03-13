@@ -82,7 +82,7 @@ function convertSkinTo1_8(context: CanvasContext, width: number): void {
 
   const scale = computeSkinScale(width)
   const copySkin = (sX: number, sY: number, w: number, h: number, dX: number, dY: number): void =>
-    context.drawImage(context.canvas, sX * scale, sY * scale, w * scale, h * scale, -dX * scale + w * scale, dY * scale, w * scale, h * scale) // -w https://github.com/samizdatco/skia-canvas/issues/283
+    context.drawImage(context.canvas, sX * scale, sY * scale, w * scale, h * scale, -dX * scale - w * scale, dY * scale, w * scale, h * scale) // -w https://github.com/samizdatco/skia-canvas/issues/283
 
   copySkin(4, 16, 4, 4, 20, 48) // Top Leg
   copySkin(8, 16, 4, 4, 24, 48) // Bottom Leg
