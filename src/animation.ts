@@ -1,4 +1,4 @@
-import { PlayerObject } from 'model.js';
+import { PlayerObject } from './model.js';
 import { Quaternion, Vector3 } from "three";
 
 type Params = Record<
@@ -444,16 +444,25 @@ export class HitAnimation extends PlayerAnimation {
 }
 
 export class SwimAnimation extends PlayerAnimation {
-	private lock: boolean = false;
-	protected animate(player: PlayerObject): void {
-		if (this.progress === 0) {
-			this.lock = false;
+	static title = '游泳'
+	static params = {
+		...defaultParams,
+		multiple: {
+			value: 1,
+			desc: defaultParams.multiple.desc
 		}
-		const period = 1.3;
-		const t = this.progress % period;
-		const phase = t / period;
+	};
+
+	params = getParamsValue(SwimAnimation.params);
+	protected animate(player: PlayerObject, progress: number): void {
+		player.position.y = -5;
+		player.rotation.x = Math.PI / 2;
+		player.skin.head.rotation.x = -Math.PI / 4;
+		player.cape.rotation.x = Math.PI / 4;
+
+		const loopProgress = (progress * this.params.multiple) % 1;
 		// keyframe timing points
-		const times = [0, 0.7 / period, 1.1 / period, 1.0];
+		const times = [0, 0.7 / 1.3, 1.1 / 1.3, 1.0];
 		const leftEulerDeg = [
 			{ z: 180, y: 180, x: 0 },
 			{ z: 287.2, y: 180, x: 0 },
@@ -488,29 +497,18 @@ export class SwimAnimation extends PlayerAnimation {
 			return { i: times.length - 2, t0: times[times.length - 2], t1: times[times.length - 1] };
 		}
 
-		const seg = findSegment(phase);
-		const p = (phase - seg.t0) / (seg.t1 - seg.t0);
+		const seg = findSegment(loopProgress);
+		const p = (loopProgress - seg.t0) / (seg.t1 - seg.t0);
 		const i = seg.i;
-		if (!this.lock) {
-			let k = 1.3;
-			if (i == 0 && p * k < 1) {
-				player.position.y = -5 * p * k;
-				player.rotation.x = (1.3 * p * Math.PI) / 2;
-				player.skin.head.rotation.x = (-Math.PI / 4) * p * k;
-				player.cape.rotation.x = (Math.PI / 4) * p * k;
-			} else {
-				this.lock = true;
-			}
-		}
 		const qLeft = new Quaternion().copy(leftQuats[i]).slerp(leftQuats[i + 1], p);
 		const qRight = new Quaternion().copy(rightQuats[i]).slerp(rightQuats[i + 1], p);
 
 		player.skin.leftArm.quaternion.copy(qLeft);
 		player.skin.rightArm.quaternion.copy(qRight);
-		const legFreq = 390 * toRad;
 		const legAmp = 17.2 * toRad;
-		const leftLegX = legAmp * Math.cos(this.progress * legFreq + Math.PI);
-		const rightLegX = legAmp * Math.cos(this.progress * legFreq);
+		const legPhase = loopProgress * Math.PI * 2;
+		const leftLegX = legAmp * Math.cos(legPhase + Math.PI);
+		const rightLegX = legAmp * Math.cos(legPhase);
 		player.skin.leftLeg.rotation.x = leftLegX;
 		player.skin.leftLeg.rotation.y = -0.1 * toRad;
 		player.skin.leftLeg.rotation.z = -0.1 * toRad;

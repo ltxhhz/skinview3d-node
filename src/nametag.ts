@@ -1,6 +1,6 @@
 import { Canvas } from "skia-canvas";
 import { NearestFilter, Sprite, SpriteMaterial } from "three";
-import { canvas2DataTexture } from "utils/load-image.js";
+import { canvas2DataTexture } from "./utils/load-image.js";
 
 export interface NameTagOptions {
 	/**

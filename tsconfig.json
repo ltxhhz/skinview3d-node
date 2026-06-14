@@ -1,7 +1,7 @@
 {
 	"compilerOptions": {
-		"baseUrl": "src",
 		"outDir": "libs",
+		"rootDir": "./src",
 		"allowJs": false,
 		"allowSyntheticDefaultImports": true,
 		"allowUnreachableCode": false,
@@ -15,6 +15,7 @@
 		"strict": true,
 		"target": "esnext",
 		"lib": [
+			"DOM",
 			"ES2022"
 		]
 	},

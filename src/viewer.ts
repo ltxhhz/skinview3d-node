@@ -333,7 +333,7 @@ export class SkinViewer {
 	// private onContextRestored: () => void;
 
 	private _pixelRatio: number;
-	private devicePixelRatioQuery: MediaQueryList | null;
+	// private devicePixelRatioQuery: MediaQueryList | null;
 	// private onDevicePixelRatioChange: () => void;
 
 	private _nameTag: NameTagObject | null = null;
@@ -379,7 +379,7 @@ export class SkinViewer {
 		// 	this.renderer.setPixelRatio(window.devicePixelRatio);
 		// } else {
 			this._pixelRatio = options.pixelRatio || 1;
-			this.devicePixelRatioQuery = null;
+			// this.devicePixelRatioQuery = null;
 			this.renderer.setPixelRatio(1);
 		// }
 

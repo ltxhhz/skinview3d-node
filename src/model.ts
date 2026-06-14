@@ -1,4 +1,4 @@
-import { NameTagObject } from "nametag.js";
+import { NameTagObject } from "./nametag.js";
 import type { ModelType } from "./utils/index.js";
 import {
 	BoxGeometry,
