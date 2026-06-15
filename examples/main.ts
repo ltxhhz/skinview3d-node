@@ -1,10 +1,10 @@
-import * as skinview3d from "../src/skinview3d";
-import type { ModelType } from "skinview-utils";
-import type { BackEquipment } from "../src/model";
-import "./style.css";
+import * as skinview3d from '../src/skinview3d';
+import type { ModelType } from 'skinview-utils';
+import type { BackEquipment } from '../src/model';
+import './style.css';
 
-const skinParts = ["head", "body", "rightArm", "leftArm", "rightLeg", "leftLeg"];
-const skinLayers = ["innerLayer", "outerLayer"];
+const skinParts = ['head', 'body', 'rightArm', 'leftArm', 'rightLeg', 'leftLeg'];
+const skinLayers = ['innerLayer', 'outerLayer'];
 const availableAnimations = {
 	idle: new skinview3d.IdleAnimation(),
 	walk: new skinview3d.WalkingAnimation(),
@@ -13,7 +13,7 @@ const availableAnimations = {
 	wave: new skinview3d.WaveAnimation(),
 	crouch: new skinview3d.CrouchAnimation(),
 	hit: new skinview3d.HitAnimation(),
-	swim: new skinview3d.SwimAnimation(),
+	swim: new skinview3d.SwimAnimation()
 };
 
 let skinViewer: skinview3d.SkinViewer;
@@ -25,14 +25,14 @@ function obtainTextureUrl(id: string): string {
 	const file = fileInput?.files?.[0];
 
 	if (!file) {
-		if (unsetButton && !unsetButton.classList.contains("hidden")) {
-			unsetButton.classList.add("hidden");
+		if (unsetButton && !unsetButton.classList.contains('hidden')) {
+			unsetButton.classList.add('hidden');
 		}
-		return urlInput?.value || "";
+		return urlInput?.value || '';
 	}
 
 	if (unsetButton) {
-		unsetButton.classList.remove("hidden");
+		unsetButton.classList.remove('hidden');
 	}
 	if (urlInput) {
 		urlInput.value = `Local file: ${file.name}`;
@@ -42,21 +42,21 @@ function obtainTextureUrl(id: string): string {
 }
 
 function reloadSkin(): void {
-	const input = document.getElementById("skin_url") as HTMLInputElement;
-	const url = obtainTextureUrl("skin_url");
-	if (url === "") {
+	const input = document.getElementById('skin_url') as HTMLInputElement;
+	const url = obtainTextureUrl('skin_url');
+	if (url === '') {
 		skinViewer.loadSkin(null);
-		input?.setCustomValidity("");
+		input?.setCustomValidity('');
 	} else {
-		const skinModel = document.getElementById("skin_model") as HTMLSelectElement;
-		const earsSource = document.getElementById("ears_source") as HTMLSelectElement;
+		const skinModel = document.getElementById('skin_model') as HTMLSelectElement;
+		const earsSource = document.getElementById('ears_source') as HTMLSelectElement;
 
 		skinViewer
 			.loadSkin(url, {
 				model: skinModel?.value as ModelType,
-				ears: earsSource?.value === "current_skin",
+				ears: earsSource?.value === 'current_skin'
 			})
-			.then(() => input?.setCustomValidity(""))
+			.then(() => input?.setCustomValidity(''))
 			.catch(e => {
 				input?.setCustomValidity("Image can't be loaded.");
 				console.error(e);
@@ -65,18 +65,16 @@ function reloadSkin(): void {
 }
 
 function reloadCape(): void {
-	const input = document.getElementById("cape_url") as HTMLInputElement;
-	const url = obtainTextureUrl("cape_url");
-	if (url === "") {
+	const input = document.getElementById('cape_url') as HTMLInputElement;
+	const url = obtainTextureUrl('cape_url');
+	if (url === '') {
 		skinViewer.loadCape(null);
-		input?.setCustomValidity("");
+		input?.setCustomValidity('');
 	} else {
-		const selectedBackEquipment = document.querySelector(
-			'input[type="radio"][name="back_equipment"]:checked'
-		) as HTMLInputElement;
+		const selectedBackEquipment = document.querySelector('input[type="radio"][name="back_equipment"]:checked') as HTMLInputElement;
 		skinViewer
 			.loadCape(url, { backEquipment: selectedBackEquipment?.value as BackEquipment })
-			.then(() => input?.setCustomValidity(""))
+			.then(() => input?.setCustomValidity(''))
 			.catch(e => {
 				input?.setCustomValidity("Image can't be loaded.");
 				console.error(e);
@@ -85,32 +83,32 @@ function reloadCape(): void {
 }
 
 function reloadEars(skipSkinReload = false): void {
-	const earsSource = document.getElementById("ears_source") as HTMLSelectElement;
+	const earsSource = document.getElementById('ears_source') as HTMLSelectElement;
 	const sourceType = earsSource?.value;
 	let hideInput = true;
 
-	if (sourceType === "none") {
+	if (sourceType === 'none') {
 		skinViewer.loadEars(null);
-	} else if (sourceType === "current_skin") {
+	} else if (sourceType === 'current_skin') {
 		if (!skipSkinReload) {
 			reloadSkin();
 		}
 	} else {
 		hideInput = false;
-		const options = document.querySelectorAll<HTMLOptionElement>("#default_ears option[data-texture-type]");
+		const options = document.querySelectorAll<HTMLOptionElement>('#default_ears option[data-texture-type]');
 		for (const opt of options) {
 			opt.disabled = opt.dataset.textureType !== sourceType;
 		}
 
-		const input = document.getElementById("ears_url") as HTMLInputElement;
-		const url = obtainTextureUrl("ears_url");
-		if (url === "") {
+		const input = document.getElementById('ears_url') as HTMLInputElement;
+		const url = obtainTextureUrl('ears_url');
+		if (url === '') {
 			skinViewer.loadEars(null);
-			input?.setCustomValidity("");
+			input?.setCustomValidity('');
 		} else {
 			skinViewer
-				.loadEars(url, { textureType: sourceType as "standalone" | "skin" })
-				.then(() => input?.setCustomValidity(""))
+				.loadEars(url, { textureType: sourceType as 'standalone' | 'skin' })
+				.then(() => input?.setCustomValidity(''))
 				.catch(e => {
 					input?.setCustomValidity("Image can't be loaded.");
 					console.error(e);
@@ -118,28 +116,28 @@ function reloadEars(skipSkinReload = false): void {
 		}
 	}
 
-	const el = document.getElementById("ears_texture_input");
+	const el = document.getElementById('ears_texture_input');
 	if (hideInput) {
-		if (el && !el.classList.contains("hidden")) {
-			el.classList.add("hidden");
+		if (el && !el.classList.contains('hidden')) {
+			el.classList.add('hidden');
 		}
 	} else if (el) {
-		el.classList.remove("hidden");
+		el.classList.remove('hidden');
 	}
 }
 
 function reloadPanorama(): void {
-	const input = document.getElementById("panorama_url") as HTMLInputElement;
-	const backgroundTypeInput = document.getElementById("background_type") as HTMLSelectElement;
-	const url = obtainTextureUrl("panorama_url");
-	backgroundTypeInput.value = "panorama";
-	if (url === "") {
+	const input = document.getElementById('panorama_url') as HTMLInputElement;
+	const backgroundTypeInput = document.getElementById('background_type') as HTMLSelectElement;
+	const url = obtainTextureUrl('panorama_url');
+	backgroundTypeInput.value = 'panorama';
+	if (url === '') {
 		skinViewer.background = null;
-		input?.setCustomValidity("");
+		input?.setCustomValidity('');
 	} else {
 		skinViewer
 			.loadPanorama(url)
-			.then(() => input?.setCustomValidity(""))
+			.then(() => input?.setCustomValidity(''))
 			.catch(e => {
 				input?.setCustomValidity("Image can't be loaded.");
 				console.error(e);
@@ -148,29 +146,26 @@ function reloadPanorama(): void {
 }
 
 function updateBackground(): void {
-	const backgroundType = (document.getElementById("background_type") as HTMLSelectElement)?.value;
-	const panoramaSection =
-		document.querySelector(".control-section h1")?.textContent === "Panorama"
-			? document.querySelector(".control-section h1")?.parentElement
-			: null;
+	const backgroundType = (document.getElementById('background_type') as HTMLSelectElement)?.value;
+	const panoramaSection = document.querySelector('.control-section h1')?.textContent === 'Panorama' ? document.querySelector('.control-section h1')?.parentElement : null;
 
-	if (backgroundType === "color") {
-		const color = (document.getElementById("background_color") as HTMLInputElement)?.value;
+	if (backgroundType === 'color') {
+		const color = (document.getElementById('background_color') as HTMLInputElement)?.value;
 		skinViewer.background = color;
 		if (panoramaSection) {
-			panoramaSection.style.display = "none";
+			panoramaSection.style.display = 'none';
 		}
 	} else {
 		if (panoramaSection) {
-			panoramaSection.style.display = "block";
+			panoramaSection.style.display = 'block';
 		}
 		reloadPanorama();
 	}
 }
 
 function reloadNameTag(): void {
-	const text = (document.getElementById("nametag_text") as HTMLInputElement)?.value;
-	if (text === "") {
+	const text = (document.getElementById('nametag_text') as HTMLInputElement)?.value;
+	if (text === '') {
 		skinViewer.nameTag = null;
 	} else {
 		skinViewer.nameTag = text;
@@ -178,80 +173,80 @@ function reloadNameTag(): void {
 }
 
 function initializeControls(): void {
-	const canvasWidth = document.getElementById("canvas_width") as HTMLInputElement;
-	const canvasHeight = document.getElementById("canvas_height") as HTMLInputElement;
-	const fov = document.getElementById("fov") as HTMLInputElement;
-	const zoom = document.getElementById("zoom") as HTMLInputElement;
-	const globalLight = document.getElementById("global_light") as HTMLInputElement;
-	const cameraLight = document.getElementById("camera_light") as HTMLInputElement;
-	const animationPauseResume = document.getElementById("animation_pause_resume");
-	const autoRotate = document.getElementById("auto_rotate") as HTMLInputElement;
-	const autoRotateSpeed = document.getElementById("auto_rotate_speed") as HTMLInputElement;
-	const controlRotate = document.getElementById("control_rotate") as HTMLInputElement;
-	const controlZoom = document.getElementById("control_zoom") as HTMLInputElement;
-	const controlPan = document.getElementById("control_pan") as HTMLInputElement;
-	const animationSpeed = document.getElementById("animation_speed") as HTMLInputElement;
-	const hitSpeed = document.getElementById("hit_speed") as HTMLInputElement;
-	const hitSpeedLabel = document.getElementById("hit_speed_label");
-	const animationCrouch = document.getElementById("animation_crouch") as HTMLInputElement;
-	const addHittingAnimation = document.getElementById("add_hitting_animation") as HTMLInputElement;
+	const canvasWidth = document.getElementById('canvas_width') as HTMLInputElement;
+	const canvasHeight = document.getElementById('canvas_height') as HTMLInputElement;
+	const fov = document.getElementById('fov') as HTMLInputElement;
+	const zoom = document.getElementById('zoom') as HTMLInputElement;
+	const globalLight = document.getElementById('global_light') as HTMLInputElement;
+	const cameraLight = document.getElementById('camera_light') as HTMLInputElement;
+	const animationPauseResume = document.getElementById('animation_pause_resume');
+	const autoRotate = document.getElementById('auto_rotate') as HTMLInputElement;
+	const autoRotateSpeed = document.getElementById('auto_rotate_speed') as HTMLInputElement;
+	const controlRotate = document.getElementById('control_rotate') as HTMLInputElement;
+	const controlZoom = document.getElementById('control_zoom') as HTMLInputElement;
+	const controlPan = document.getElementById('control_pan') as HTMLInputElement;
+	const animationSpeed = document.getElementById('animation_speed') as HTMLInputElement;
+	const hitSpeed = document.getElementById('hit_speed') as HTMLInputElement;
+	const hitSpeedLabel = document.getElementById('hit_speed_label');
+	const animationCrouch = document.getElementById('animation_crouch') as HTMLInputElement;
+	const addHittingAnimation = document.getElementById('add_hitting_animation') as HTMLInputElement;
 
-	canvasWidth?.addEventListener("change", e => {
+	canvasWidth?.addEventListener('change', e => {
 		const target = e.target as HTMLInputElement;
 		skinViewer.width = Number(target.value);
 	});
 
-	canvasHeight?.addEventListener("change", e => {
+	canvasHeight?.addEventListener('change', e => {
 		const target = e.target as HTMLInputElement;
 		skinViewer.height = Number(target.value);
 	});
 
-	fov?.addEventListener("change", e => {
+	fov?.addEventListener('change', e => {
 		const target = e.target as HTMLInputElement;
 		skinViewer.fov = Number(target.value);
 	});
 
-	zoom?.addEventListener("change", e => {
+	zoom?.addEventListener('change', e => {
 		const target = e.target as HTMLInputElement;
 		skinViewer.zoom = Number(target.value);
 	});
 
-	globalLight?.addEventListener("change", e => {
+	globalLight?.addEventListener('change', e => {
 		const target = e.target as HTMLInputElement;
 		skinViewer.globalLight.intensity = Number(target.value);
 	});
 
-	cameraLight?.addEventListener("change", e => {
+	cameraLight?.addEventListener('change', e => {
 		const target = e.target as HTMLInputElement;
 		skinViewer.cameraLight.intensity = Number(target.value);
 	});
 
-	animationPauseResume?.addEventListener("click", () => {
+	animationPauseResume?.addEventListener('click', () => {
 		if (skinViewer.animation) {
 			skinViewer.animation.paused = !skinViewer.animation.paused;
 		}
 	});
 
-	autoRotate?.addEventListener("change", e => {
+	autoRotate?.addEventListener('change', e => {
 		const target = e.target as HTMLInputElement;
 		skinViewer.autoRotate = target.checked;
 	});
 
-	autoRotateSpeed?.addEventListener("change", e => {
+	autoRotateSpeed?.addEventListener('change', e => {
 		const target = e.target as HTMLInputElement;
 		skinViewer.autoRotateSpeed = Number(target.value);
 	});
 
 	const animationRadios = document.querySelectorAll<HTMLInputElement>('input[type="radio"][name="animation"]');
 	for (const el of animationRadios) {
-		el.addEventListener("change", e => {
+		el.addEventListener('change', e => {
 			const target = e.target as HTMLInputElement;
-			const crouchSetting = document.getElementById("crouch_setting");
+			const crouchSetting = document.getElementById('crouch_setting');
 			if (crouchSetting) {
-				crouchSetting.style.display = animationCrouch?.checked ? "block" : "none";
+				crouchSetting.style.display = animationCrouch?.checked ? 'block' : 'none';
 			}
 
-			if (target.value === "") {
+			if (target.value === '') {
 				skinViewer.animation = null;
 			} else {
 				skinViewer.animation = availableAnimations[target.value];
@@ -262,18 +257,16 @@ function initializeControls(): void {
 		});
 	}
 
-	animationCrouch?.addEventListener("change", () => {
-		const crouchSettings = document.querySelectorAll<HTMLInputElement>(
-			'input[type="checkbox"][name="crouch_setting_item"]'
-		);
+	animationCrouch?.addEventListener('change', () => {
+		const crouchSettings = document.querySelectorAll<HTMLInputElement>('input[type="checkbox"][name="crouch_setting_item"]');
 		for (const el of crouchSettings) {
 			el.checked = false;
 		}
 		if (hitSpeed) {
-			hitSpeed.value = "";
+			hitSpeed.value = '';
 		}
 		if (hitSpeedLabel) {
-			hitSpeedLabel.style.display = "none";
+			hitSpeedLabel.style.display = 'none';
 		}
 	});
 
@@ -290,19 +283,17 @@ function initializeControls(): void {
 		},
 		addHitAnimation: (value: boolean) => {
 			if (hitSpeedLabel) {
-				hitSpeedLabel.style.display = value ? "block" : "none";
+				hitSpeedLabel.style.display = value ? 'block' : 'none';
 			}
 			if (value && skinViewer.animation) {
 				const hitSpeedValue = hitSpeed?.value;
-				if (hitSpeedValue === "") {
+				if (hitSpeedValue === '') {
 					(skinViewer.animation as unknown as { addHitAnimation: () => void }).addHitAnimation();
 				} else {
-					(skinViewer.animation as unknown as { addHitAnimation: (speed: string) => void }).addHitAnimation(
-						hitSpeedValue
-					);
+					(skinViewer.animation as unknown as { addHitAnimation: (speed: string) => void }).addHitAnimation(hitSpeedValue);
 				}
 			}
-		},
+		}
 	};
 
 	const updateCrouchAnimation = () => {
@@ -310,9 +301,7 @@ function initializeControls(): void {
 		if (skinViewer.animation && animationSpeed) {
 			skinViewer.animation.speed = Number(animationSpeed.value);
 		}
-		const crouchSettingItems = document.querySelectorAll<HTMLInputElement>(
-			'input[type="checkbox"][name="crouch_setting_item"]'
-		);
+		const crouchSettingItems = document.querySelectorAll<HTMLInputElement>('input[type="checkbox"][name="crouch_setting_item"]');
 		for (const el of crouchSettingItems) {
 			const setting = crouchSettings[el.value as keyof typeof crouchSettings];
 			if (setting) {
@@ -321,50 +310,46 @@ function initializeControls(): void {
 		}
 	};
 
-	const crouchSettingItems = document.querySelectorAll<HTMLInputElement>(
-		'input[type="checkbox"][name="crouch_setting_item"]'
-	);
+	const crouchSettingItems = document.querySelectorAll<HTMLInputElement>('input[type="checkbox"][name="crouch_setting_item"]');
 	for (const el of crouchSettingItems) {
-		el.addEventListener("change", () => {
+		el.addEventListener('change', () => {
 			updateCrouchAnimation();
 		});
 	}
 
-	hitSpeed?.addEventListener("change", () => {
+	hitSpeed?.addEventListener('change', () => {
 		updateCrouchAnimation();
 	});
 
-	animationSpeed?.addEventListener("change", e => {
+	animationSpeed?.addEventListener('change', e => {
 		const target = e.target as HTMLInputElement;
 		if (skinViewer.animation) {
 			skinViewer.animation.speed = Number(target.value);
 		}
-		if (animationCrouch?.checked && addHittingAnimation?.checked && hitSpeed?.value === "") {
+		if (animationCrouch?.checked && addHittingAnimation?.checked && hitSpeed?.value === '') {
 			updateCrouchAnimation();
 		}
 	});
 
-	controlRotate?.addEventListener("change", e => {
+	controlRotate?.addEventListener('change', e => {
 		const target = e.target as HTMLInputElement;
 		skinViewer.controls.enableRotate = target.checked;
 	});
 
-	controlZoom?.addEventListener("change", e => {
+	controlZoom?.addEventListener('change', e => {
 		const target = e.target as HTMLInputElement;
 		skinViewer.controls.enableZoom = target.checked;
 	});
 
-	controlPan?.addEventListener("change", e => {
+	controlPan?.addEventListener('change', e => {
 		const target = e.target as HTMLInputElement;
 		skinViewer.controls.enablePan = target.checked;
 	});
 
 	for (const part of skinParts) {
 		for (const layer of skinLayers) {
-			const checkbox = document.querySelector<HTMLInputElement>(
-				`#layers_table input[type="checkbox"][data-part="${part}"][data-layer="${layer}"]`
-			);
-			checkbox?.addEventListener("change", e => {
+			const checkbox = document.querySelector<HTMLInputElement>(`#layers_table input[type="checkbox"][data-part="${part}"][data-layer="${layer}"]`);
+			checkbox?.addEventListener('change', e => {
 				const target = e.target as HTMLInputElement;
 				skinViewer.playerObject.skin[part][layer].visible = target.checked;
 			});
@@ -379,7 +364,7 @@ function initializeControls(): void {
 		const unsetAction = () => {
 			if (urlInput) {
 				urlInput.readOnly = false;
-				urlInput.value = "";
+				urlInput.value = '';
 			}
 			if (fileInput) {
 				fileInput.value = fileInput.defaultValue;
@@ -387,37 +372,37 @@ function initializeControls(): void {
 			callback();
 		};
 
-		fileInput?.addEventListener("change", () => callback());
-		urlInput?.addEventListener("keydown", e => {
-			if (e.key === "Backspace" && urlInput?.readOnly) {
+		fileInput?.addEventListener('change', () => callback());
+		urlInput?.addEventListener('keydown', e => {
+			if (e.key === 'Backspace' && urlInput?.readOnly) {
 				unsetAction();
 			}
 		});
-		unsetButton?.addEventListener("click", () => unsetAction());
+		unsetButton?.addEventListener('click', () => unsetAction());
 	};
 
-	initializeUploadButton("skin_url", reloadSkin);
-	initializeUploadButton("cape_url", reloadCape);
-	initializeUploadButton("ears_url", reloadEars);
-	initializeUploadButton("panorama_url", reloadPanorama);
+	initializeUploadButton('skin_url', reloadSkin);
+	initializeUploadButton('cape_url', reloadCape);
+	initializeUploadButton('ears_url', reloadEars);
+	initializeUploadButton('panorama_url', reloadPanorama);
 
-	const skinUrl = document.getElementById("skin_url") as HTMLInputElement;
-	const skinModel = document.getElementById("skin_model") as HTMLSelectElement;
-	const capeUrl = document.getElementById("cape_url") as HTMLInputElement;
-	const earsSource = document.getElementById("ears_source") as HTMLSelectElement;
-	const earsUrl = document.getElementById("ears_url") as HTMLInputElement;
-	const panoramaUrl = document.getElementById("panorama_url") as HTMLInputElement;
+	const skinUrl = document.getElementById('skin_url') as HTMLInputElement;
+	const skinModel = document.getElementById('skin_model') as HTMLSelectElement;
+	const capeUrl = document.getElementById('cape_url') as HTMLInputElement;
+	const earsSource = document.getElementById('ears_source') as HTMLSelectElement;
+	const earsUrl = document.getElementById('ears_url') as HTMLInputElement;
+	const panoramaUrl = document.getElementById('panorama_url') as HTMLInputElement;
 
-	skinUrl?.addEventListener("change", reloadSkin);
-	skinModel?.addEventListener("change", reloadSkin);
-	capeUrl?.addEventListener("change", reloadCape);
-	earsSource?.addEventListener("change", () => reloadEars());
-	earsUrl?.addEventListener("change", () => reloadEars());
-	panoramaUrl?.addEventListener("change", reloadPanorama);
+	skinUrl?.addEventListener('change', reloadSkin);
+	skinModel?.addEventListener('change', reloadSkin);
+	capeUrl?.addEventListener('change', reloadCape);
+	earsSource?.addEventListener('change', () => reloadEars());
+	earsUrl?.addEventListener('change', () => reloadEars());
+	panoramaUrl?.addEventListener('change', reloadPanorama);
 
 	const backEquipmentRadios = document.querySelectorAll<HTMLInputElement>('input[type="radio"][name="back_equipment"]');
 	for (const el of backEquipmentRadios) {
-		el.addEventListener("change", e => {
+		el.addEventListener('change', e => {
 			const target = e.target as HTMLInputElement;
 			if (skinViewer.playerObject.backEquipment === null) {
 				// cape texture hasn't been loaded yet
@@ -428,27 +413,27 @@ function initializeControls(): void {
 		});
 	}
 
-	const resetAll = document.getElementById("reset_all");
-	resetAll?.addEventListener("click", () => {
+	const resetAll = document.getElementById('reset_all');
+	resetAll?.addEventListener('click', () => {
 		skinViewer.dispose();
 		initializeViewer();
 	});
 
-	const nametagText = document.getElementById("nametag_text") as HTMLInputElement;
-	nametagText?.addEventListener("change", reloadNameTag);
+	const nametagText = document.getElementById('nametag_text') as HTMLInputElement;
+	nametagText?.addEventListener('change', reloadNameTag);
 
-	const backgroundType = document.getElementById("background_type") as HTMLSelectElement;
-	const backgroundColor = document.getElementById("background_color") as HTMLInputElement;
+	const backgroundType = document.getElementById('background_type') as HTMLSelectElement;
+	const backgroundColor = document.getElementById('background_color') as HTMLInputElement;
 
-	backgroundType?.addEventListener("change", updateBackground);
-	backgroundColor?.addEventListener("change", () => {
-		backgroundType.value = "color";
+	backgroundType?.addEventListener('change', updateBackground);
+	backgroundColor?.addEventListener('change', () => {
+		backgroundType.value = 'color';
 		updateBackground();
 	});
 
 	// Set panorama as default
 	if (backgroundType) {
-		backgroundType.value = "panorama";
+		backgroundType.value = 'panorama';
 	}
 
 	// Initialize background type
@@ -456,27 +441,27 @@ function initializeControls(): void {
 }
 
 function initializeViewer(): void {
-	const skinContainer = document.getElementById("skin_container") as HTMLCanvasElement;
+	const skinContainer = document.getElementById('skin_container') as HTMLCanvasElement;
 	if (!skinContainer) {
-		throw new Error("Canvas element not found");
+		throw new Error('Canvas element not found');
 	}
 
 	skinViewer = new skinview3d.SkinViewer({
-		canvas: skinContainer,
+		canvas: skinContainer
 	});
 
-	const canvasWidth = document.getElementById("canvas_width") as HTMLInputElement;
-	const canvasHeight = document.getElementById("canvas_height") as HTMLInputElement;
-	const fov = document.getElementById("fov") as HTMLInputElement;
-	const zoom = document.getElementById("zoom") as HTMLInputElement;
-	const globalLight = document.getElementById("global_light") as HTMLInputElement;
-	const cameraLight = document.getElementById("camera_light") as HTMLInputElement;
-	const autoRotate = document.getElementById("auto_rotate") as HTMLInputElement;
-	const autoRotateSpeed = document.getElementById("auto_rotate_speed") as HTMLInputElement;
-	const controlRotate = document.getElementById("control_rotate") as HTMLInputElement;
-	const controlZoom = document.getElementById("control_zoom") as HTMLInputElement;
-	const controlPan = document.getElementById("control_pan") as HTMLInputElement;
-	const animationSpeed = document.getElementById("animation_speed") as HTMLInputElement;
+	const canvasWidth = document.getElementById('canvas_width') as HTMLInputElement;
+	const canvasHeight = document.getElementById('canvas_height') as HTMLInputElement;
+	const fov = document.getElementById('fov') as HTMLInputElement;
+	const zoom = document.getElementById('zoom') as HTMLInputElement;
+	const globalLight = document.getElementById('global_light') as HTMLInputElement;
+	const cameraLight = document.getElementById('camera_light') as HTMLInputElement;
+	const autoRotate = document.getElementById('auto_rotate') as HTMLInputElement;
+	const autoRotateSpeed = document.getElementById('auto_rotate_speed') as HTMLInputElement;
+	const controlRotate = document.getElementById('control_rotate') as HTMLInputElement;
+	const controlZoom = document.getElementById('control_zoom') as HTMLInputElement;
+	const controlPan = document.getElementById('control_pan') as HTMLInputElement;
+	const animationSpeed = document.getElementById('animation_speed') as HTMLInputElement;
 
 	skinViewer.width = Number(canvasWidth?.value);
 	skinViewer.height = Number(canvasHeight?.value);
@@ -502,9 +487,7 @@ function initializeViewer(): void {
 
 	for (const part of skinParts) {
 		for (const layer of skinLayers) {
-			const checkbox = document.querySelector<HTMLInputElement>(
-				`#layers_table input[type="checkbox"][data-part="${part}"][data-layer="${layer}"]`
-			);
+			const checkbox = document.querySelector<HTMLInputElement>(`#layers_table input[type="checkbox"][data-part="${part}"][data-layer="${layer}"]`);
 			skinViewer.playerObject.skin[part][layer].visible = checkbox?.checked ?? false;
 		}
 	}

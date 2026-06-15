@@ -1,6 +1,6 @@
-import { Canvas } from "skia-canvas";
-import { NearestFilter, Sprite, SpriteMaterial } from "three";
-import { canvas2DataTexture } from "./utils/load-image.js";
+import { Canvas } from 'skia-canvas';
+import { NearestFilter, Sprite, SpriteMaterial } from 'three';
+import { canvas2DataTexture } from './utils/load-image.js';
 
 export interface NameTagOptions {
 	/**
@@ -94,10 +94,10 @@ export class NameTagObject extends Sprite {
 	private height: number;
 	private textMaterial: SpriteMaterial;
 
-	constructor(text: string = "", options: NameTagOptions = {}) {
+	constructor(text: string = '', options: NameTagOptions = {}) {
 		const material = new SpriteMaterial({
 			transparent: true,
-			alphaTest: 1e-5,
+			alphaTest: 1e-5
 		});
 
 		super(material);
@@ -105,10 +105,10 @@ export class NameTagObject extends Sprite {
 		this.textMaterial = material;
 
 		this.text = text;
-		this.font = options.font === undefined ? "48px Minecraft" : options.font;
+		this.font = options.font === undefined ? '48px Minecraft' : options.font;
 		this.margin = options.margin === undefined ? [5, 10, 5, 10] : options.margin;
-		this.textStyle = options.textStyle === undefined ? "white" : options.textStyle;
-		this.backgroundStyle = options.backgroundStyle === undefined ? "rgba(0,0,0,.25)" : options.backgroundStyle;
+		this.textStyle = options.textStyle === undefined ? 'white' : options.textStyle;
+		this.backgroundStyle = options.backgroundStyle === undefined ? 'rgba(0,0,0,.25)' : options.backgroundStyle;
 		this.height = options.height === undefined ? 4.0 : options.height;
 
 		const repaintAfterLoaded = options.repaintAfterLoaded ?? true;
@@ -127,21 +127,20 @@ export class NameTagObject extends Sprite {
 	}
 
 	private paint() {
-		const canvas = new Canvas()
+		const canvas = new Canvas();
 		// Measure the text size
 		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-		let ctx = canvas.getContext("2d")!;
+		let ctx = canvas.getContext('2d')!;
 		ctx.font = this.font;
 		const metrics = ctx.measureText(this.text);
 
 		// Compute canvas size
 		canvas.width = this.margin[3] + metrics.actualBoundingBoxLeft + metrics.actualBoundingBoxRight + this.margin[1];
-		canvas.height =
-			this.margin[0] + metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent + this.margin[2];
+		canvas.height = this.margin[0] + metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent + this.margin[2];
 
 		// After change canvas size, the context needs to be re-created
 		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-		ctx = canvas.getContext("2d")!;
+		ctx = canvas.getContext('2d')!;
 		ctx.font = this.font;
 
 		// Fill background
@@ -150,14 +149,10 @@ export class NameTagObject extends Sprite {
 
 		// Draw text
 		ctx.fillStyle = this.textStyle;
-		ctx.fillText(
-			this.text,
-			this.margin[3] + metrics.actualBoundingBoxLeft,
-			this.margin[0] + metrics.actualBoundingBoxAscent
-		);
+		ctx.fillText(this.text, this.margin[3] + metrics.actualBoundingBoxLeft, this.margin[0] + metrics.actualBoundingBoxAscent);
 
 		// Apply texture
-		const texture = canvas2DataTexture(canvas)
+		const texture = canvas2DataTexture(canvas);
 		texture.magFilter = NearestFilter;
 		texture.minFilter = NearestFilter;
 		this.textMaterial.map = texture;

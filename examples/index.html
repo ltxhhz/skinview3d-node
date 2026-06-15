@@ -96,31 +96,21 @@
 					<label class="control">Height: <input id="canvas_height" type="number" value="300" size="4" /></label>
 				</div>
 				<div>
-					<label class="control"
-						>FOV: <input id="fov" type="number" value="70" step="1" min="1" max="179" size="2"
-					/></label>
-					<label class="control"
-						>Zoom: <input id="zoom" type="number" value="0.90" step="0.01" min="0.01" max="2.00" size="4"
-					/></label>
+					<label class="control">FOV: <input id="fov" type="number" value="70" step="1" min="1" max="179" size="2" /></label>
+					<label class="control">Zoom: <input id="zoom" type="number" value="0.90" step="0.01" min="0.01" max="2.00" size="4" /></label>
 				</div>
 			</div>
 
 			<div class="control-section">
 				<h1>Light</h1>
-				<label class="control"
-					>Global: <input id="global_light" type="number" value="3" step="0.01" min="0.00" max="2.00" size="4"
-				/></label>
-				<label class="control"
-					>Camera: <input id="camera_light" type="number" value="0.60" step="10.00" min="0.00" max="3500.00" size="4"
-				/></label>
+				<label class="control">Global: <input id="global_light" type="number" value="3" step="0.01" min="0.00" max="2.00" size="4" /></label>
+				<label class="control">Camera: <input id="camera_light" type="number" value="0.60" step="10.00" min="0.00" max="3500.00" size="4" /></label>
 			</div>
 
 			<div class="control-section">
 				<h1>Rotation</h1>
 				<label class="control"><input id="auto_rotate" type="checkbox" /> Enable</label>
-				<label class="control"
-					>Speed: <input id="auto_rotate_speed" type="number" value="2" step="0.1" size="3"
-				/></label>
+				<label class="control">Speed: <input id="auto_rotate_speed" type="number" value="2" step="0.1" size="3" /></label>
 			</div>
 
 			<div class="control-section">
@@ -143,23 +133,10 @@
 				<div class="control" id="crouch_setting" style="display: none">
 					Crouch settings:
 					<label><input type="checkbox" id="run_once" name="crouch_setting_item" value="runOnce" />Run once</label>
-					<label
-						><input type="checkbox" id="show_progress" name="crouch_setting_item" value="showProgress" />Show
-						progress</label
-					>
-					<label>
-						<input type="checkbox" id="add_hitting_animation" name="crouch_setting_item" value="addHitAnimation" />Add
-						hitting animation</label
-					>
+					<label><input type="checkbox" id="show_progress" name="crouch_setting_item" value="showProgress" />Show progress</label>
+					<label> <input type="checkbox" id="add_hitting_animation" name="crouch_setting_item" value="addHitAnimation" />Add hitting animation</label>
 					<br /><label class="control" id="hit_speed_label" style="display: none"
-						>Hit speed :<input
-							id="hit_speed"
-							type="number"
-							value=""
-							step="0.1"
-							size="3"
-							placeholder="default following crouch speed"
-							style="width: 190px"
+						>Hit speed :<input id="hit_speed" type="number" value="" step="0.1" size="3" placeholder="default following crouch speed" style="width: 190px"
 					/></label>
 				</div>
 			</div>
@@ -211,9 +188,7 @@
 				<div>
 					<h2>Back Equipment</h2>
 					<div class="control">
-						<label
-							><input type="radio" id="back_equipment_cape" name="back_equipment" value="cape" checked /> Cape</label
-						>
+						<label><input type="radio" id="back_equipment_cape" name="back_equipment" value="cape" checked /> Cape</label>
 						<label><input type="radio" id="back_equipment_elytra" name="back_equipment" value="elytra" /> Elytra</label>
 					</div>
 				</div>
@@ -223,16 +198,7 @@
 				<h1>Skin</h1>
 				<div>
 					<div class="control">
-						<label
-							>URL:
-							<input
-								id="skin_url"
-								type="text"
-								value="img/hatsune_miku.png"
-								placeholder="none"
-								list="default_skins"
-								size="20"
-						/></label>
+						<label>URL: <input id="skin_url" type="text" value="img/hatsune_miku.png" placeholder="none" list="default_skins" size="20" /></label>
 						<datalist id="default_skins">
 							<option value="img/1_8_texturemap_redux.png"></option>
 							<option value="img/hacksore.png"></option>
@@ -244,9 +210,7 @@
 						</datalist>
 						<input id="skin_url_upload" type="file" class="hidden" accept="image/*" />
 						<button id="skin_url_unset" type="button" class="control hidden">Unset</button>
-						<button type="button" class="control" onclick="document.getElementById('skin_url_upload').click();">
-							Browse...
-						</button>
+						<button type="button" class="control" onclick="document.getElementById('skin_url_upload').click()">Browse...</button>
 					</div>
 				</div>
 				<div>
@@ -264,16 +228,7 @@
 			<div class="control-section">
 				<h1>Cape</h1>
 				<div class="control">
-					<label
-						>URL:
-						<input
-							id="cape_url"
-							type="text"
-							value="img/mojang_cape.png"
-							placeholder="none"
-							list="default_capes"
-							size="20"
-					/></label>
+					<label>URL: <input id="cape_url" type="text" value="img/mojang_cape.png" placeholder="none" list="default_capes" size="20" /></label>
 					<datalist id="default_capes">
 						<option value=""></option>
 						<option value="img/mojang_cape.png"></option>
@@ -282,9 +237,7 @@
 					</datalist>
 					<input id="cape_url_upload" type="file" class="hidden" accept="image/*" />
 					<button id="cape_url_unset" type="button" class="control hidden">Unset</button>
-					<button type="button" class="control" onclick="document.getElementById('cape_url_upload').click();">
-						Browse...
-					</button>
+					<button type="button" class="control" onclick="document.getElementById('cape_url_upload').click()">Browse...</button>
 				</div>
 			</div>
 
@@ -302,9 +255,7 @@
 					</label>
 				</div>
 				<div id="ears_texture_input">
-					<label class="control"
-						>URL: <input id="ears_url" type="text" value="" placeholder="none" list="default_ears" size="20"
-					/></label>
+					<label class="control">URL: <input id="ears_url" type="text" value="" placeholder="none" list="default_ears" size="20" /></label>
 					<datalist id="default_ears">
 						<option value=""></option>
 						<option value="img/ears.png" data-texture-type="standalone"></option>
@@ -312,9 +263,7 @@
 					</datalist>
 					<input id="ears_url_upload" type="file" class="hidden" accept="image/*" />
 					<button id="ears_url_unset" type="button" class="control hidden">Unset</button>
-					<button type="button" class="control" onclick="document.getElementById('ears_url_upload').click();">
-						Browse...
-					</button>
+					<button type="button" class="control" onclick="document.getElementById('ears_url_upload').click()">Browse...</button>
 				</div>
 			</div>
 
@@ -346,25 +295,14 @@
 			<div class="control-section">
 				<h1>Panorama</h1>
 				<div class="control">
-					<label
-						>URL:
-						<input
-							id="panorama_url"
-							type="text"
-							value="img/panorama.png"
-							placeholder="none"
-							list="default_panorama"
-							size="20"
-					/></label>
+					<label>URL: <input id="panorama_url" type="text" value="img/panorama.png" placeholder="none" list="default_panorama" size="20" /></label>
 					<datalist id="default_panorama">
 						<option value=""></option>
 						<option value="img/panorama.png"></option>
 					</datalist>
 					<input id="panorama_url_upload" type="file" class="hidden" accept="image/*" />
 					<button id="panorama_url_unset" type="button" class="control hidden">Unset</button>
-					<button type="button" class="control" onclick="document.getElementById('panorama_url_upload').click();">
-						Browse...
-					</button>
+					<button type="button" class="control" onclick="document.getElementById('panorama_url_upload').click()">Browse...</button>
 				</div>
 			</div>
 
@@ -400,13 +338,12 @@
 			src="https://unpkg.com/stats.js@0.17.0/src/Stats.js"
 			integrity="sha384-W71K+d2HbqXqQWSj3Vj4RDsIVvIV7lR8O6RArKAiqB39ntwLci0W08qOn4Z1n8sM"
 			crossorigin="anonymous"
-			async
-		></script>
+			async></script>
 		<script type="module" async>
-			import Stats from "https://unpkg.com/stats.js@0.17.0/src/Stats.js";
+			import Stats from 'https://unpkg.com/stats.js@0.17.0/src/Stats.js';
 			const stats = new Stats();
-			stats.dom.style.left = "";
-			stats.dom.style.right = "0";
+			stats.dom.style.left = '';
+			stats.dom.style.right = '0';
 			document.body.appendChild(stats.dom);
 			function loop() {
 				stats.update();

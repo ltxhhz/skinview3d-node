@@ -9,8 +9,8 @@ import {
 	loadSkinToCanvas,
 	type ModelType,
 	type RemoteImage,
-	type TextureSource,
-} from "./utils/index.js";
+	type TextureSource
+} from './utils/index.js';
 
 import {
 	Color,
@@ -36,19 +36,19 @@ import {
 	ColorManagement,
 	LinearFilter,
 	RGBAFormat,
-	UnsignedByteType,
-} from "three";
-import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
-import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer.js";
-import { FullScreenQuad } from "three/examples/jsm/postprocessing/Pass.js";
-import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js";
-import { ShaderPass } from "three/examples/jsm/postprocessing/ShaderPass.js";
-import { FXAAShader } from "three/examples/jsm/shaders/FXAAShader.js";
-import { PlayerAnimation } from "./animation.js";
-import { type BackEquipment, PlayerObject } from "./model.js";
-import { NameTagObject } from "./nametag.js";
-import { Canvas, ExportFormat, ExportOptions } from "skia-canvas";
-import gl from 'gl'
+	UnsignedByteType
+} from 'three';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
+import { FullScreenQuad } from 'three/examples/jsm/postprocessing/Pass.js';
+import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
+import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js';
+import { FXAAShader } from 'three/examples/jsm/shaders/FXAAShader.js';
+import { PlayerAnimation } from './animation.js';
+import { type BackEquipment, PlayerObject } from './model.js';
+import { NameTagObject } from './nametag.js';
+import { Canvas, ExportFormat, ExportOptions } from 'skia-canvas';
+import gl from 'gl';
 
 export interface LoadOptions {
 	/**
@@ -67,7 +67,7 @@ export interface SkinLoadOptions extends LoadOptions {
 	 *
 	 * @defaultValue `"auto-detect"`
 	 */
-	model?: ModelType | "auto-detect";
+	model?: ModelType | 'auto-detect';
 
 	/**
 	 * Whether to display the ears drawn on the skin texture.
@@ -79,7 +79,7 @@ export interface SkinLoadOptions extends LoadOptions {
 	 *
 	 * @defaultValue `false`
 	 */
-	ears?: boolean | "load-only";
+	ears?: boolean | 'load-only';
 }
 
 export interface CapeLoadOptions extends LoadOptions {
@@ -102,7 +102,7 @@ export interface EarsLoadOptions extends LoadOptions {
 	 *
 	 * @defaultValue `"standalone"`
 	 */
-	textureType?: "standalone" | "skin";
+	textureType?: 'standalone' | 'skin';
 }
 
 export interface SkinViewerOptions {
@@ -149,7 +149,7 @@ export interface SkinViewerOptions {
 	 *
 	 * @defaultValue `"auto-detect"`
 	 */
-	model?: ModelType | "auto-detect";
+	model?: ModelType | 'auto-detect';
 
 	/**
 	 * The cape texture of the player.
@@ -158,7 +158,7 @@ export interface SkinViewerOptions {
 	 */
 	cape?: RemoteImage | TextureSource;
 
-	capeLoadOptions?: CapeLoadOptions
+	capeLoadOptions?: CapeLoadOptions;
 
 	/**
 	 * The ear texture of the player.
@@ -173,9 +173,9 @@ export interface SkinViewerOptions {
 	 * @defaultValue If unspecified, the ears will be invisible.
 	 */
 	ears?:
-		| "current-skin"
+		| 'current-skin'
 		| {
-				textureType: "standalone" | "skin";
+				textureType: 'standalone' | 'skin';
 				source: RemoteImage | TextureSource;
 		  };
 
@@ -266,7 +266,7 @@ export class SkinViewer {
 	 * The canvas where the renderer draws its output.
 	 */
 	readonly canvas: Canvas;
-	readonly ctx: ReturnType<typeof gl>
+	readonly ctx: ReturnType<typeof gl>;
 
 	readonly scene: Scene;
 
@@ -299,9 +299,9 @@ export class SkinViewer {
 	readonly renderPass: RenderPass;
 	readonly fxaaPass: ShaderPass;
 
-	readonly skinCanvas: Canvas
-	readonly capeCanvas: Canvas
-	readonly earsCanvas: Canvas
+	readonly skinCanvas: Canvas;
+	readonly capeCanvas: Canvas;
+	readonly earsCanvas: Canvas;
 	private skinTexture: Texture | null = null;
 	private capeTexture: Texture | null = null;
 	private earsTexture: Texture | null = null;
@@ -341,14 +341,15 @@ export class SkinViewer {
 
 	private _loadPromiseArr: any[] = [];
 
-	readonly ready: Promise<any>
+	/** 读取各部位 */
+	readonly ready: Promise<any>;
 
 	constructor(options: SkinViewerOptions = {}) {
-		this.canvas = options.canvas || new Canvas;
-		this.ctx = options.ctx || gl(300,300,{preserveDrawingBuffer:options.preserveDrawingBuffer})
-		this.skinCanvas = new Canvas
-		this.capeCanvas = new Canvas
-		this.earsCanvas = new Canvas
+		this.canvas = options.canvas || new Canvas();
+		this.ctx = options.ctx || gl(300, 300, { preserveDrawingBuffer: options.preserveDrawingBuffer });
+		this.skinCanvas = new Canvas();
+		this.capeCanvas = new Canvas();
+		this.earsCanvas = new Canvas();
 
 		this.scene = new Scene();
 		this.camera = new PerspectiveCamera();
@@ -360,7 +361,7 @@ export class SkinViewer {
 		this.renderer = new WebGLRenderer({
 			canvas: this.canvas as any,
 			context: this.ctx,
-			preserveDrawingBuffer: options.preserveDrawingBuffer === true, // default: false
+			preserveDrawingBuffer: options.preserveDrawingBuffer === true // default: false
 		});
 
 		// this.onDevicePixelRatioChange = () => {
@@ -378,23 +379,23 @@ export class SkinViewer {
 		// 	this.devicePixelRatioQuery.addEventListener("change", this.onDevicePixelRatioChange, { once: true });
 		// 	this.renderer.setPixelRatio(window.devicePixelRatio);
 		// } else {
-			this._pixelRatio = options.pixelRatio || 1;
-			// this.devicePixelRatioQuery = null;
-			this.renderer.setPixelRatio(1);
+		this._pixelRatio = options.pixelRatio || 1;
+		// this.devicePixelRatioQuery = null;
+		this.renderer.setPixelRatio(1);
 		// }
 
 		this.renderer.setClearColor(0, 0);
 
 		// if (this.renderer.capabilities.isWebGL2) {
-			// Use float precision depth if possible
-			// see https://github.com/bs-community/skinview3d/issues/111
+		// Use float precision depth if possible
+		// see https://github.com/bs-community/skinview3d/issues/111
 		const renderTarget = new WebGLRenderTarget(0, 0, {
-				// depthTexture: new DepthTexture(0, 0, FloatType),
-				minFilter: LinearFilter,
-				magFilter: LinearFilter,
-				format: RGBAFormat,
-				type: UnsignedByteType,
-			});
+			// depthTexture: new DepthTexture(0, 0, FloatType),
+			minFilter: LinearFilter,
+			magFilter: LinearFilter,
+			format: RGBAFormat,
+			type: UnsignedByteType
+		});
 		// }
 		this.composer = new EffectComposer(this.renderer, renderTarget);
 		this.renderPass = new RenderPass(this.scene, this.camera);
@@ -403,7 +404,7 @@ export class SkinViewer {
 		this.composer.addPass(this.fxaaPass);
 
 		this.playerObject = new PlayerObject();
-		this.playerObject.name = "player";
+		this.playerObject.name = 'player';
 		this.playerObject.skin.visible = false;
 		this.playerObject.cape.visible = false;
 		this.playerWrapper = new Group();
@@ -420,18 +421,22 @@ export class SkinViewer {
 		// }
 
 		if (options.skin !== undefined) {
-			this._loadPromiseArr.push(this.loadSkin(options.skin, {
-				model: options.model,
-				ears: options.ears === "current-skin",
-			}));
+			this._loadPromiseArr.push(
+				this.loadSkin(options.skin, {
+					model: options.model,
+					ears: options.ears === 'current-skin'
+				})
+			);
 		}
 		if (options.cape !== undefined) {
 			this._loadPromiseArr.push(this.loadCape(options.cape, options.capeLoadOptions));
 		}
-		if (options.ears !== undefined && options.ears !== "current-skin") {
-			this._loadPromiseArr.push(this.loadEars(options.ears.source, {
-				textureType: options.ears.textureType,
-			}));
+		if (options.ears !== undefined && options.ears !== 'current-skin') {
+			this._loadPromiseArr.push(
+				this.loadEars(options.ears.source, {
+					textureType: options.ears.textureType
+				})
+			);
 		}
 		if (options.width !== undefined) {
 			this.width = options.width;
@@ -511,8 +516,8 @@ export class SkinViewer {
 		this.composer.setSize(this.width, this.height);
 		const pixelRatio = this.renderer.getPixelRatio();
 		this.composer.setPixelRatio(pixelRatio);
-		this.fxaaPass.material.uniforms["resolution"].value.x = 1 / (this.width * pixelRatio);
-		this.fxaaPass.material.uniforms["resolution"].value.y = 1 / (this.height * pixelRatio);
+		this.fxaaPass.material.uniforms['resolution'].value.x = 1 / (this.width * pixelRatio);
+		this.fxaaPass.material.uniforms['resolution'].value.y = 1 / (this.height * pixelRatio);
 	}
 
 	private recreateSkinTexture(): void {
@@ -547,10 +552,7 @@ export class SkinViewer {
 	}
 
 	loadSkin(empty: null): void;
-	loadSkin<S extends TextureSource | RemoteImage>(
-		source: S,
-		options?: SkinLoadOptions
-	): S extends TextureSource ? void : Promise<void>;
+	loadSkin<S extends TextureSource | RemoteImage>(source: S, options?: SkinLoadOptions): S extends TextureSource ? void : Promise<void>;
 
 	loadSkin(source: TextureSource | RemoteImage | null, options: SkinLoadOptions = {}): void | Promise<void> {
 		if (source === null) {
@@ -559,7 +561,7 @@ export class SkinViewer {
 			loadSkinToCanvas(this.skinCanvas, source);
 			this.recreateSkinTexture();
 
-			if (options.model === undefined || options.model === "auto-detect") {
+			if (options.model === undefined || options.model === 'auto-detect') {
 				this.playerObject.skin.modelType = inferModelType(this.skinCanvas);
 			} else {
 				this.playerObject.skin.modelType = options.model;
@@ -569,7 +571,7 @@ export class SkinViewer {
 				this.playerObject.skin.visible = true;
 			}
 
-			if (options.ears === true || options.ears == "load-only") {
+			if (options.ears === true || options.ears == 'load-only') {
 				loadEarsToCanvasFromSkin(this.earsCanvas, source);
 				this.recreateEarsTexture();
 				if (options.ears === true) {
@@ -595,10 +597,7 @@ export class SkinViewer {
 	}
 
 	loadCape(empty: null): void;
-	loadCape<S extends TextureSource | RemoteImage>(
-		source: S,
-		options?: CapeLoadOptions
-	): S extends TextureSource ? void : Promise<void>;
+	loadCape<S extends TextureSource | RemoteImage>(source: S, options?: CapeLoadOptions): S extends TextureSource ? void : Promise<void>;
 
 	loadCape(source: TextureSource | RemoteImage | null, options: CapeLoadOptions = {}): void | Promise<void> {
 		if (source === null) {
@@ -608,7 +607,7 @@ export class SkinViewer {
 			this.recreateCapeTexture();
 
 			if (options.makeVisible !== false) {
-				this.playerObject.backEquipment = options.backEquipment || "cape";
+				this.playerObject.backEquipment = options.backEquipment || 'cape';
 			}
 		} else {
 			return loadImage(source).then(image => this.loadCape(image, options));
@@ -626,16 +625,13 @@ export class SkinViewer {
 	}
 
 	loadEars(empty: null): void;
-	loadEars<S extends TextureSource | RemoteImage>(
-		source: S,
-		options?: EarsLoadOptions
-	): S extends TextureSource ? void : Promise<void>;
+	loadEars<S extends TextureSource | RemoteImage>(source: S, options?: EarsLoadOptions): S extends TextureSource ? void : Promise<void>;
 
 	loadEars(source: TextureSource | RemoteImage | null, options: EarsLoadOptions = {}): void | Promise<void> {
 		if (source === null) {
 			this.resetEars();
 		} else if (isTextureSource(source)) {
-			if (options.textureType === "skin") {
+			if (options.textureType === 'skin') {
 				loadEarsToCanvasFromSkin(this.earsCanvas, source);
 			} else {
 				loadEarsToCanvas(this.earsCanvas, source);
@@ -671,10 +667,7 @@ export class SkinViewer {
 		return this.loadBackground(source, EquirectangularReflectionMapping);
 	}
 
-	loadBackground<S extends TextureSource | RemoteImage>(
-		source: S,
-		mapping?: Mapping
-	): S extends TextureSource ? void : Promise<void>;
+	loadBackground<S extends TextureSource | RemoteImage>(source: S, mapping?: Mapping): S extends TextureSource ? void : Promise<void>;
 
 	loadBackground<S extends TextureSource | RemoteImage>(source: S, mapping?: Mapping): void | Promise<void> {
 		if (isTextureSource(source)) {
@@ -694,40 +687,39 @@ export class SkinViewer {
 	}
 
 	toRGBA(): Uint8Array {
-		const buf = new Uint8Array(this.width * this.height * 4)
-		this.ctx.readPixels(0, 0, this.width, this.height, this.ctx.RGBA, this.ctx.UNSIGNED_BYTE, buf)
-		const res = new Uint8Array(this.width * this.height * 4)
+		const buf = new Uint8Array(this.width * this.height * 4);
+		this.ctx.readPixels(0, 0, this.width, this.height, this.ctx.RGBA, this.ctx.UNSIGNED_BYTE, buf);
+		const res = new Uint8Array(this.width * this.height * 4);
 		for (let y = 0; y < this.height; y++) {
 			for (let x = 0; x < this.width; x++) {
-				const srcIdx = ((this.height - 1 - y) * this.width + x) * 4
-				const dstIdx = (y * this.width + x) * 4
-				res[dstIdx] = buf[srcIdx]
-				res[dstIdx + 1] = buf[srcIdx + 1]
-				res[dstIdx + 2] = buf[srcIdx + 2]
-				res[dstIdx + 3] = buf[srcIdx + 3]
+				const srcIdx = ((this.height - 1 - y) * this.width + x) * 4;
+				const dstIdx = (y * this.width + x) * 4;
+				res[dstIdx] = buf[srcIdx];
+				res[dstIdx + 1] = buf[srcIdx + 1];
+				res[dstIdx + 2] = buf[srcIdx + 2];
+				res[dstIdx + 3] = buf[srcIdx + 3];
 			}
 		}
-		return res
+		return res;
 	}
 
-
-	toBuffer(format: ExportFormat = 'png', options?: ExportOptions){
-		const buf = this.toRGBA()
-		const outCanvas = new Canvas(this.width, this.height)
-		const ctx2d = outCanvas.getContext('2d')
-		const imageData = ctx2d.createImageData(this.width, this.height)
+	toBuffer(format: ExportFormat = 'png', options?: ExportOptions) {
+		const buf = this.toRGBA();
+		const outCanvas = new Canvas(this.width, this.height);
+		const ctx2d = outCanvas.getContext('2d');
+		const imageData = ctx2d.createImageData(this.width, this.height);
 		for (let y = 0; y < this.height; y++) {
 			for (let x = 0; x < this.width; x++) {
-				const srcIdx = ((this.height - 1 - y) * this.width + x) * 4
-				const dstIdx = (y * this.width + x) * 4
-				imageData.data[dstIdx] = buf[srcIdx]
-				imageData.data[dstIdx + 1] = buf[srcIdx + 1]
-				imageData.data[dstIdx + 2] = buf[srcIdx + 2]
-				imageData.data[dstIdx + 3] = buf[srcIdx + 3]
+				const srcIdx = (y * this.width + x) * 4;
+				const dstIdx = (y * this.width + x) * 4;
+				imageData.data[dstIdx] = buf[srcIdx];
+				imageData.data[dstIdx + 1] = buf[srcIdx + 1];
+				imageData.data[dstIdx + 2] = buf[srcIdx + 2];
+				imageData.data[dstIdx + 3] = buf[srcIdx + 3];
 			}
 		}
-		ctx2d.putImageData(imageData, 0, 0)
-		return outCanvas.toBufferSync(format, options)
+		ctx2d.putImageData(imageData, 0, 0);
+		return outCanvas.toBufferSync(format, options);
 	}
 
 	/**
@@ -743,7 +735,7 @@ export class SkinViewer {
 	renderAnimationLoop(frames: number, binary: true): (() => Buffer)[];
 	renderAnimationLoop(frames = 30, binary = false) {
 		if (this._animation == null) {
-			throw new Error("No animation.");
+			throw new Error('No animation.');
 		}
 		return new Array(frames).fill(null).map((_, i) => {
 			return () => {
@@ -752,9 +744,9 @@ export class SkinViewer {
 				// this.playerObject.rotation.set(0, 0, 0);
 
 				this._animation!.render(this.playerObject, i / frames);
-				this.render()
+				this.render();
 				return binary ? this.toBuffer('png') : this.toRGBA();
-			}
+			};
 		});
 	}
 
@@ -910,9 +902,9 @@ export class SkinViewer {
 		// 		this.devicePixelRatioQuery.removeEventListener("change", this.onDevicePixelRatioChange);
 		// 		this.devicePixelRatioQuery = null;
 		// 	}
-			this._pixelRatio = newValue;
-			this.renderer.setPixelRatio(newValue);
-			this.updateComposerSize();
+		this._pixelRatio = newValue;
+		this.renderer.setPixelRatio(newValue);
+		this.updateComposerSize();
 		// }
 	}
 

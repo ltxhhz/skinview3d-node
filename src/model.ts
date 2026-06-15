@@ -1,33 +1,13 @@
-import { NameTagObject } from "./nametag.js";
-import type { ModelType } from "./utils/index.js";
-import {
-	BoxGeometry,
-	BufferAttribute,
-	DoubleSide,
-	FrontSide,
-	Group,
-	Mesh,
-	MeshStandardMaterial,
-	Object3D,
-	Texture,
-	Vector2,
-} from "three";
+import { NameTagObject } from './nametag.js';
+import type { ModelType } from './utils/index.js';
+import { BoxGeometry, BufferAttribute, DoubleSide, FrontSide, Group, Mesh, MeshStandardMaterial, Object3D, Texture, Vector2 } from 'three';
 
-function setUVs(
-	box: BoxGeometry,
-	u: number,
-	v: number,
-	width: number,
-	height: number,
-	depth: number,
-	textureWidth: number,
-	textureHeight: number
-): void {
+function setUVs(box: BoxGeometry, u: number, v: number, width: number, height: number, depth: number, textureWidth: number, textureHeight: number): void {
 	const toFaceVertices = (x1: number, y1: number, x2: number, y2: number) => [
 		new Vector2(x1 / textureWidth, 1.0 - y2 / textureHeight),
 		new Vector2(x2 / textureWidth, 1.0 - y2 / textureHeight),
 		new Vector2(x2 / textureWidth, 1.0 - y1 / textureHeight),
-		new Vector2(x1 / textureWidth, 1.0 - y1 / textureHeight),
+		new Vector2(x1 / textureWidth, 1.0 - y1 / textureHeight)
 	];
 
 	const top = toFaceVertices(u + depth, v, u + width + depth, v + depth);
@@ -76,8 +56,8 @@ export class BodyPart extends Group {
 		readonly outerLayer: Object3D
 	) {
 		super();
-		innerLayer.name = "inner";
-		outerLayer.name = "outer";
+		innerLayer.name = 'inner';
+		outerLayer.name = 'outer';
 	}
 }
 
@@ -103,12 +83,12 @@ export class SkinObject extends Group {
 		super();
 
 		this.layer1Material = new MeshStandardMaterial({
-			side: FrontSide,
+			side: FrontSide
 		});
 		this.layer2Material = new MeshStandardMaterial({
 			side: DoubleSide,
 			transparent: true,
-			alphaTest: 1e-5,
+			alphaTest: 1e-5
 		});
 
 		this.layer1MaterialBiased = this.layer1Material.clone();
@@ -131,7 +111,7 @@ export class SkinObject extends Group {
 		const head2Mesh = new Mesh(head2Box, this.layer2Material);
 
 		this.head = new BodyPart(headMesh, head2Mesh);
-		this.head.name = "head";
+		this.head.name = 'head';
 		this.head.add(headMesh, head2Mesh);
 		headMesh.position.y = 4;
 		head2Mesh.position.y = 4;
@@ -147,7 +127,7 @@ export class SkinObject extends Group {
 		const body2Mesh = new Mesh(body2Box, this.layer2Material);
 
 		this.body = new BodyPart(bodyMesh, body2Mesh);
-		this.body.name = "body";
+		this.body.name = 'body';
 		this.body.add(bodyMesh, body2Mesh);
 		this.body.position.y = -6;
 		this.add(this.body);
@@ -179,7 +159,7 @@ export class SkinObject extends Group {
 		rightArmPivot.position.y = -4;
 
 		this.rightArm = new BodyPart(rightArmMesh, rightArm2Mesh);
-		this.rightArm.name = "rightArm";
+		this.rightArm.name = 'rightArm';
 		this.rightArm.add(rightArmPivot);
 		this.rightArm.position.x = -5;
 		this.rightArm.position.y = -2;
@@ -212,7 +192,7 @@ export class SkinObject extends Group {
 		leftArmPivot.position.y = -4;
 
 		this.leftArm = new BodyPart(leftArmMesh, leftArm2Mesh);
-		this.leftArm.name = "leftArm";
+		this.leftArm.name = 'leftArm';
 		this.leftArm.add(leftArmPivot);
 		this.leftArm.position.x = 5;
 		this.leftArm.position.y = -2;
@@ -232,7 +212,7 @@ export class SkinObject extends Group {
 		rightLegPivot.position.y = -6;
 
 		this.rightLeg = new BodyPart(rightLegMesh, rightLeg2Mesh);
-		this.rightLeg.name = "rightLeg";
+		this.rightLeg.name = 'rightLeg';
 		this.rightLeg.add(rightLegPivot);
 		this.rightLeg.position.x = -1.9;
 		this.rightLeg.position.y = -12;
@@ -253,14 +233,14 @@ export class SkinObject extends Group {
 		leftLegPivot.position.y = -6;
 
 		this.leftLeg = new BodyPart(leftLegMesh, leftLeg2Mesh);
-		this.leftLeg.name = "leftLeg";
+		this.leftLeg.name = 'leftLeg';
 		this.leftLeg.add(leftLegPivot);
 		this.leftLeg.position.x = 1.9;
 		this.leftLeg.position.y = -12;
 		this.leftLeg.position.z = -0.1;
 		this.add(this.leftLeg);
 
-		this.modelType = "default";
+		this.modelType = 'default';
 	}
 
 	get map(): Texture | null {
@@ -284,11 +264,11 @@ export class SkinObject extends Group {
 	}
 
 	get modelType(): ModelType {
-		return this.slim ? "slim" : "default";
+		return this.slim ? 'slim' : 'default';
 	}
 
 	set modelType(value: ModelType) {
-		this.slim = value === "slim";
+		this.slim = value === 'slim';
 		this.modelListeners.forEach(listener => listener());
 	}
 
@@ -340,7 +320,7 @@ export class CapeObject extends Group {
 		this.material = new MeshStandardMaterial({
 			side: DoubleSide,
 			transparent: true,
-			alphaTest: 1e-5,
+			alphaTest: 1e-5
 		});
 
 		// +z (front) - inside of cape
@@ -375,7 +355,7 @@ export class ElytraObject extends Group {
 		this.material = new MeshStandardMaterial({
 			side: DoubleSide,
 			transparent: true,
-			alphaTest: 1e-5,
+			alphaTest: 1e-5
 		});
 
 		const leftWingBox = new BoxGeometry(12, 22, 4);
@@ -442,18 +422,18 @@ export class EarsObject extends Group {
 		super();
 
 		this.material = new MeshStandardMaterial({
-			side: FrontSide,
+			side: FrontSide
 		});
 		const earBox = new BoxGeometry(8, 8, 4 / 3);
 		setUVs(earBox, 0, 0, 6, 6, 1, 14, 7);
 
 		this.rightEar = new Mesh(earBox, this.material);
-		this.rightEar.name = "rightEar";
+		this.rightEar.name = 'rightEar';
 		this.rightEar.position.x = -6;
 		this.add(this.rightEar);
 
 		this.leftEar = new Mesh(earBox, this.material);
-		this.leftEar.name = "leftEar";
+		this.leftEar.name = 'leftEar';
 		this.leftEar.position.x = 6;
 		this.add(this.leftEar);
 	}
@@ -468,7 +448,7 @@ export class EarsObject extends Group {
 	}
 }
 
-export type BackEquipment = "cape" | "elytra";
+export type BackEquipment = 'cape' | 'elytra';
 
 const CapeDefaultAngle = (10.8 * Math.PI) / 180;
 
@@ -483,12 +463,12 @@ export class PlayerObject extends Group {
 		super();
 
 		this.skin = new SkinObject();
-		this.skin.name = "skin";
+		this.skin.name = 'skin';
 		this.skin.position.y = 8;
 		this.add(this.skin);
 
 		this.cape = new CapeObject();
-		this.cape.name = "cape";
+		this.cape.name = 'cape';
 		this.cape.position.y = 8;
 		this.cape.position.z = -2;
 		this.cape.rotation.x = CapeDefaultAngle;
@@ -496,14 +476,14 @@ export class PlayerObject extends Group {
 		this.add(this.cape);
 
 		this.elytra = new ElytraObject();
-		this.elytra.name = "elytra";
+		this.elytra.name = 'elytra';
 		this.elytra.position.y = 8;
 		this.elytra.position.z = -2;
 		this.elytra.visible = false;
 		this.add(this.elytra);
 
 		this.ears = new EarsObject();
-		this.ears.name = "ears";
+		this.ears.name = 'ears';
 		this.ears.position.y = 10;
 		this.ears.position.z = 2 / 3;
 		this.ears.visible = false;
@@ -512,17 +492,17 @@ export class PlayerObject extends Group {
 
 	get backEquipment(): BackEquipment | null {
 		if (this.cape.visible) {
-			return "cape";
+			return 'cape';
 		} else if (this.elytra.visible) {
-			return "elytra";
+			return 'elytra';
 		} else {
 			return null;
 		}
 	}
 
 	set backEquipment(value: BackEquipment | null) {
-		this.cape.visible = value === "cape";
-		this.elytra.visible = value === "elytra";
+		this.cape.visible = value === 'cape';
+		this.elytra.visible = value === 'elytra';
 	}
 
 	resetJoints(): void {

@@ -1,10 +1,10 @@
 @font-face {
-	font-family: "Minecraft";
-	src: url("/font/minecraft.woff2") format("woff2");
+	font-family: 'Minecraft';
+	src: url('/font/minecraft.woff2') format('woff2');
 }
 
 body {
-	font-family: "Helvetica Neue", "Helvetica", "Arial", "sans-serif";
+	font-family: 'Helvetica Neue', 'Helvetica', 'Arial', 'sans-serif';
 	margin: 5px;
 }
 
@@ -21,7 +21,7 @@ h2 {
 	margin: 5px 0 0 0;
 }
 
-input[type="text"] {
+input[type='text'] {
 	box-sizing: border-box;
 }
 
@@ -71,7 +71,7 @@ table td:last-child {
 	border-right: unset;
 }
 
-table td input[type="checkbox"] {
+table td input[type='checkbox'] {
 	vertical-align: middle;
 	margin: 0;
 	width: 100%;

@@ -1,5 +1,5 @@
 import { PlayerObject } from './model.js';
-import { Quaternion, Vector3 } from "three";
+import { Quaternion, Vector3 } from 'three';
 
 type Params = Record<
 	string,
@@ -34,16 +34,11 @@ type ExtractValueType<T> = T extends { value: infer V } ? V : never;
 
 // 映射类型，保留每个键对应的值的具体类型
 type ParamsValues<T extends Params> = {
-  [K in keyof T]: ExtractValueType<T[K]>;
+	[K in keyof T]: ExtractValueType<T[K]>;
 };
 
-function getParamsValue<T extends Params>(params:T): ParamsValues<T> {
-	return Object.fromEntries(
-		Object.entries(params).map(([key, value]) => [
-			key,
-			value.value
-		])
-	) as ParamsValues<T>;
+function getParamsValue<T extends Params>(params: T): ParamsValues<T> {
+	return Object.fromEntries(Object.entries(params).map(([key, value]) => [key, value.value])) as ParamsValues<T>;
 }
 
 export abstract class PlayerAnimation {
@@ -77,7 +72,7 @@ export abstract class PlayerAnimation {
  * ```
  */
 export class FunctionAnimation extends PlayerAnimation {
-	static title = '函数'
+	static title = '函数';
 	static params = {
 		...defaultParams
 	};
@@ -97,7 +92,7 @@ export class FunctionAnimation extends PlayerAnimation {
 }
 
 export class IdleAnimation extends PlayerAnimation {
-	static title = '常态'
+	static title = '常态';
 	static params = {
 		...defaultParams
 	};
@@ -126,7 +121,7 @@ export class WalkingAnimation extends PlayerAnimation {
 	 */
 	// headBobbing: boolean = true;
 
-	static title = '行走'
+	static title = '行走';
 	static params = {
 		...defaultParams,
 		headBobbing: {
@@ -168,13 +163,13 @@ export class WalkingAnimation extends PlayerAnimation {
 }
 
 export class RunningAnimation extends PlayerAnimation {
-	static title = '跑步'
+	static title = '跑步';
 	static params = {
 		...defaultParams,
 		multiply: {
 			value: 3,
 			desc: defaultParams.multiple.desc
-		},
+		}
 
 		// jump: {
 		// 	value: true,
@@ -217,7 +212,7 @@ function clamp(num: number, min: number, max: number): number {
 }
 
 export class FlyingAnimation extends PlayerAnimation {
-	static title = '飞行'
+	static title = '飞行';
 	static params = {
 		...defaultParams,
 		multiple: {
@@ -251,7 +246,7 @@ export class FlyingAnimation extends PlayerAnimation {
 }
 
 export class WaveAnimation extends PlayerAnimation {
-	static title = '挥手'
+	static title = '挥手';
 	static params = {
 		...defaultParams,
 		whichArm: {
@@ -281,7 +276,7 @@ export class WaveAnimation extends PlayerAnimation {
 }
 
 export class CrouchAnimation extends PlayerAnimation {
-	static title = '蹲伏'
+	static title = '蹲伏';
 	static params = {
 		...defaultParams,
 		showProgress: {
@@ -420,7 +415,7 @@ export class CrouchAnimation extends PlayerAnimation {
 }
 export class HitAnimation extends PlayerAnimation {
 	// multiple: number = 2;
-	static title = '击打'
+	static title = '击打';
 	static params = {
 		...defaultParams,
 		multiple: {
@@ -444,7 +439,7 @@ export class HitAnimation extends PlayerAnimation {
 }
 
 export class SwimAnimation extends PlayerAnimation {
-	static title = '游泳'
+	static title = '游泳';
 	static params = {
 		...defaultParams,
 		multiple: {
@@ -467,13 +462,13 @@ export class SwimAnimation extends PlayerAnimation {
 			{ z: 180, y: 180, x: 0 },
 			{ z: 287.2, y: 180, x: 0 },
 			{ z: 180, y: 180, x: 90 },
-			{ z: 180, y: 180, x: 0 },
+			{ z: 180, y: 180, x: 0 }
 		];
 		const rightEulerDeg = [
 			{ z: -180, y: 180, x: 0 },
 			{ z: -287.2, y: 180, x: 0 },
 			{ z: -180, y: 180, x: 90 },
-			{ z: -180, y: 180, x: 0 },
+			{ z: -180, y: 180, x: 0 }
 		];
 
 		const toRad = Math.PI / 180;
@@ -519,7 +514,7 @@ export class SwimAnimation extends PlayerAnimation {
 }
 
 export class SpinUpAnimation extends PlayerAnimation {
-	static title = '旋转起飞'
+	static title = '旋转起飞';
 	static params = {
 		...defaultParams,
 		maxHeight: {
@@ -573,7 +568,7 @@ export class SpinUpAnimation extends PlayerAnimation {
 }
 
 export class RotateAnimation extends PlayerAnimation {
-	static title = '旋转展示'
+	static title = '旋转展示';
 	static params = {
 		...defaultParams
 	};
@@ -590,7 +585,7 @@ export class RotateAnimation extends PlayerAnimation {
 export class NodAnimation extends PlayerAnimation {
 	// delay = 2;
 	// amp = 0.5;
-	static title = '点头'
+	static title = '点头';
 	static params = {
 		...defaultParams,
 		delay: {
@@ -657,7 +652,7 @@ function lerp(start: number, end: number, t: number): number {
 export class FlailAnimation extends PlayerAnimation {
 	// multiple = 2;
 	// delay = 4;
-	static title = '手舞足蹈'
+	static title = '手舞足蹈';
 	static params = {
 		...defaultParams,
 		multiple: {
