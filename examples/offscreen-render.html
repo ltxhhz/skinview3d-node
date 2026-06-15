@@ -5,10 +5,221 @@
 		<meta http-equiv="x-ua-compatible" content="ie=edge" />
 		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
 		<title>skinview3d / offscreen-render</title>
+		<style>
+			body {
+				margin: 0;
+				padding: 24px;
+				font-family: system-ui, sans-serif;
+				background: #f3f5f7;
+				color: #18212b;
+			}
+
+			.layout {
+				display: flex;
+				flex-direction: row;
+				gap: 24px;
+			}
+
+			.panel {
+				background: #fff;
+				border-radius: 16px;
+				padding: 20px;
+				box-shadow: 0 10px 30px rgba(18, 33, 43, 0.08);
+			}
+
+			.panel:nth-child(1){
+				flex: 1;
+			}
+
+			form {
+				display: grid;
+				gap: 12px;
+				grid-template-columns: 1fr 1fr;
+			}
+
+			@media (max-width: 768px) {
+				form {
+					grid-template-columns: 1fr;
+				}
+			}
+
+			label {
+				display: grid;
+				gap: 6px;
+				font-size: 14px;
+			}
+
+			input,
+			select,
+			button {
+				font: inherit;
+				padding: 10px 12px;
+				border-radius: 10px;
+				border: 1px solid #cfd7df;
+				box-sizing: border-box;
+			}
+
+			button {
+				cursor: pointer;
+				background: #18212b;
+				color: #fff;
+				border: none;
+			}
+
+			.button-row {
+				display: grid;
+				grid-template-columns: 1fr 1fr;
+				gap: 12px;
+			}
+
+			.inline-toggle {
+				display: flex;
+				align-items: center;
+				gap: 10px;
+			}
+
+			.inline-toggle input[type='checkbox'] {
+				width: auto;
+				padding: 0;
+			}
+
+			.preview {
+				display: grid;
+				gap: 16px;
+				justify-items: start;
+			}
+
+			.preview img {
+				background:
+					linear-gradient(45deg, #d8dee4 25%, transparent 25%), linear-gradient(-45deg, #d8dee4 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #d8dee4 75%),
+					linear-gradient(-45deg, transparent 75%, #d8dee4 75%);
+				background-size: 20px 20px;
+				background-position:
+					0 0,
+					0 10px,
+					10px -10px,
+					-10px 0;
+				border-radius: 12px;
+				border: 1px solid #d7dee5;
+			}
+
+			pre {
+				margin: 0;
+				padding: 14px;
+				border-radius: 12px;
+				background: #10161d;
+				color: #d8e2ec;
+				overflow: auto;
+			}
+		</style>
 	</head>
 
 	<body>
-		<div id="rendered_imgs"></div>
+		<div class="layout">
+			<section class="panel">
+				<h1>Offscreen Render</h1>
+				<p>这个页面不做前端 3D 渲染，只调用 Vite 插件暴露的后端接口，返回 PNG 预览。</p>
+				<form id="render_form">
+					<label>
+						Skin
+						<input id="skin" type="text" placeholder="img/hatsune_miku.png" />
+					</label>
+					<label>
+						Cape
+						<input id="cape" type="text" placeholder="img/mojang_cape.png" />
+					</label>
+					<label>
+						Animation
+						<select id="animation">
+							<option value="none">none</option>
+							<option value="idle">idle</option>
+							<option value="walk">walk</option>
+							<option value="run">run</option>
+							<option value="fly">fly</option>
+							<option value="wave">wave</option>
+							<option value="crouch">crouch</option>
+							<option value="hit">hit</option>
+							<option value="swim">swim</option>
+							<option value="spin">spin</option>
+							<option value="rotate">rotate</option>
+							<option value="nod">nod</option>
+							<option value="flail">flail</option>
+						</select>
+					</label>
+					<label>
+						View
+						<select id="view">
+							<option value="topLeftFront">topLeftFront</option>
+							<option value="topRightFront">topRightFront</option>
+							<option value="topFront">topFront</option>
+							<option value="front">front</option>
+							<option value="leftFront">leftFront</option>
+							<option value="rightFront">rightFront</option>
+							<option value="left">left</option>
+							<option value="right">right</option>
+							<option value="top">top</option>
+						</select>
+					</label>
+					<label>
+						Use Progress
+						<span class="inline-toggle">
+							<input id="useProgress" type="checkbox" />
+							<span>渲染指定进度</span>
+						</span>
+					</label>
+					<label>
+						Progress
+						<input id="progress" type="number" min="0" max="1" step="0.01" />
+					</label>
+					<label>
+						Frames
+						<input id="frames" type="number" min="10" max="120" step="1" />
+					</label>
+					<label>
+						Width
+						<input id="width" type="number" min="64" max="1024" step="1" />
+					</label>
+					<label>
+						Height
+						<input id="height" type="number" min="64" max="1024" step="1" />
+					</label>
+					<label>
+						FOV
+						<input id="fov" type="number" min="10" max="120" step="1" />
+					</label>
+					<label>
+						Zoom
+						<input id="zoom" type="number" min="0.1" max="2" step="0.05" />
+					</label>
+					<label>
+						Back Equipment
+						<select id="backEquipment">
+							<option value="cape">cape</option>
+							<option value="elytra">elytra</option>
+						</select>
+					</label>
+					<label>
+						Name Tag
+						<input id="nameTag" type="text" placeholder="Steve" />
+					</label>
+					<label>
+						Background
+						<input id="background" type="text" placeholder="#cccccc or empty for transparent" />
+					</label>
+					<div class="button-row">
+						<button type="submit">Render</button>
+						<button id="reset_defaults" type="button">Reset</button>
+					</div>
+				</form>
+			</section>
+
+			<section class="panel preview">
+				<h2>Preview</h2>
+				<p id="render_status">Idle</p>
+				<img id="render_preview" alt="Rendered preview" />
+				<pre id="render_payload"></pre>
+			</section>
+		</div>
 
 		<script type="module" src="./offscreen-renderer.ts"></script>
 	</body>

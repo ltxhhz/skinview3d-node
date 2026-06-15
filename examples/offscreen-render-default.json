@@ -1,0 +1,15 @@
+{
+	"skin": "E:\\Games\\skin\\steve.png",
+	"cape": "E:\\Games\\capes\\31749.png",
+	"animation": "walk",
+	"useProgress": true,
+	"progress": 0.25,
+	"frames": 60,
+	"width": 300,
+	"height": 300,
+	"fov": 65,
+	"view": "topLeftFront",
+	"zoom": 0.8,
+	"backEquipment": "cape",
+	"nameTag": "Steve"
+}

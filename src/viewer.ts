@@ -730,6 +730,16 @@ export class SkinViewer {
 		this.composer.render();
 	}
 
+	renderAnimationFrame(progress: number, binary = false) {
+		if (this._animation == null) {
+			throw new Error('No animation.');
+		}
+		return () => {
+			this._animation!.render(this.playerObject, progress);
+			this.render();
+			return binary ? this.toBuffer('png') : this.toRGBA();
+		}
+	}
 
 	renderAnimationLoop(frames?: number, binary?: false): (() => Uint8Array)[];
 	renderAnimationLoop(frames: number, binary: true): (() => Buffer)[];
