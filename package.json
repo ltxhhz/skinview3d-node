@@ -1,7 +1,7 @@
 {
 	"name": "skinview3d-node",
 	"version": "3.4.2-node.1",
-	"description": "Three.js powered Minecraft skin viewer",
+	"description": "Three.js powered Minecraft skin viewer for Node.js",
 	"main": "libs/skinview3d.cjs",
 	"type": "module",
 	"exports": {
