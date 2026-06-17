@@ -1,5 +1,13 @@
 skinview3d
-========
+==========
+
+> Fork note / 分支说明
+>
+> English:
+> This fork is adapted from upstream `skinview3d` for server-side and offscreen rendering in Node.js. Compared with upstream, it replaces the browser-oriented rendering path with a backend-friendly implementation based on `skia-canvas` and headless WebGL, adds image/buffer export helpers for single-frame and animation rendering, and includes example pages plus a Vite plugin endpoint for testing backend rendering from the browser.
+>
+> 中文：
+> 这个 fork 基于上游 `skinview3d`，主要改造成适用于 Node.js 的后端/离屏渲染版本。相对上游，它将原本面向浏览器的渲染链路适配为基于 `skia-canvas` 和 headless WebGL 的后端实现，增加了单帧与动画的图片/缓冲区导出能力，并提供了可通过 Vite 接口在浏览器中测试后端渲染的示例页面。
 
 [![CI Status](https://img.shields.io/github/actions/workflow/status/bs-community/skinview3d/ci.yaml?branch=master&label=CI&logo=github&style=flat-square)](https://github.com/bs-community/skinview3d/actions?query=workflow:CI)
 [![NPM Package](https://img.shields.io/npm/v/skinview3d.svg?style=flat-square)](https://www.npmjs.com/package/skinview3d)
@@ -9,6 +17,7 @@ skinview3d
 Three.js powered Minecraft skin viewer.
 
 # Features
+
 * 1.8 Skins
 * HD Skins
 * Capes
@@ -19,72 +28,115 @@ Three.js powered Minecraft skin viewer.
 * FXAA (fast approximate anti-aliasing)
 
 # Usage
-[Example of using skinview3d](https://skinview3d-demo.vercel.app)
 
-[![CodeSandbox](https://img.shields.io/badge/Codesandbox-040404?style=for-the-badge&logo=codesandbox&logoColor=DBDBDB)](https://codesandbox.io/s/skinview3d-template-vdmuh4)
+This fork is intended for Node.js backend rendering rather than direct browser embedding.
 
-```html
-<canvas id="skin_container"></canvas>
-<script>
-	let skinViewer = new skinview3d.SkinViewer({
-		canvas: document.getElementById("skin_container"),
-		width: 300,
-		height: 400,
-		skin: "img/skin.png"
-	});
+Install:
 
-	// Change viewer size
-	skinViewer.width = 600;
-	skinViewer.height = 800;
-
-	// Load another skin
-	skinViewer.loadSkin("img/skin2.png");
-
-	// Load a cape
-	skinViewer.loadCape("img/cape.png");
-
-	// Load an elytra (from a cape texture)
-	skinViewer.loadCape("img/cape.png", { backEquipment: "elytra" });
-
-	// Unload(hide) the cape / elytra
-	skinViewer.loadCape(null);
-
-	// Set the background color
-	skinViewer.background = 0x5a76f3;
-
-	// Set the background to a normal image
-	skinViewer.loadBackground("img/background.png");
-
-	// Set the background to a panoramic image
-	skinViewer.loadPanorama("img/panorama1.png");
-
-	// Change camera FOV
-	skinViewer.fov = 70;
-
-	// Zoom out
-	skinViewer.zoom = 0.5;
-
-	// Rotate the player
-	skinViewer.autoRotate = true;
-
-	// Apply an animation
-	skinViewer.animation = new skinview3d.WalkingAnimation();
-
-	// Set the speed of the animation
-	skinViewer.animation.speed = 3;
-
-	// Pause the animation
-	skinViewer.animation.paused = true;
-
-	// Remove the animation
-	skinViewer.animation = null;
-</script>
+```bash
+npm install skinview3d-node
 ```
 
+Render a single PNG frame:
+
+```js
+import { writeFileSync } from 'node:fs';
+import { Vector3 } from 'three';
+import { SkinViewer, WalkingAnimation } from 'skinview3d-node';
+import gl from 'gl'
+
+const glContext = gl(width, height, { preserveDrawingBuffer: true })
+const width = 300
+const height = 300
+const mockCanvas = {
+	width,
+	height,
+	style: {},
+	addEventListener: () => {},
+	removeEventListener: () => {},
+	getContext: () => glContext
+}
+
+const skinViewer = new SkinViewer({
+	canvas: mockCanvas as any,
+	width,
+	height,
+	skin: './skin.png',
+	cape: './cape.png',
+	fov: 65,
+	zoom: 0.8,
+	pixelRatio: 1,
+	preserveDrawingBuffer: true,
+	animation: new WalkingAnimation()
+});
+
+await skinViewer.ready;
+
+skinViewer.camera.position.set(25, 22, 25);
+skinViewer.camera.lookAt(new Vector3(0, 5, 0));
+
+writeFileSync('out.png', viewer.renderAnimationFrame(progress,true)());
+skinViewer.dispose();
+```
+
+Render animation frames:
+
+```js
+import { writeFileSync } from 'node:fs';
+import { SkinViewer, WalkAnimation } from 'skinview3d-node';
+import gl from 'gl'
+
+const glContext = gl(width, height, { preserveDrawingBuffer: true })
+const width = 300
+const height = 300
+const mockCanvas = {
+	width,
+	height,
+	style: {},
+	addEventListener: () => {},
+	removeEventListener: () => {},
+	getContext: () => glContext
+}
+
+const skinViewer = new SkinViewer({
+	canvas: mockCanvas as any,
+	width,
+	height,
+	skin: './skin.png',
+	animation: new SwimAnimation(),
+	preserveDrawingBuffer: true
+});
+
+await skinViewer.ready;
+
+const frames = skinViewer.renderAnimationLoop(60);
+const arr: Uint8Array[] = [];
+frames.forEach((frame, i) => {
+	const buffer = frame();
+	arr.push(buffer);
+	// writeFileSync(`out/frame-${i}.png`, buffer)
+});
+const tmpgif = './output.gif' //path.join(os.tmpdir(), 'skinview3d_tmp.gif');
+await framesToGif({
+	width,
+	height,
+	frames: arr,
+	outputPath: tmpgif,
+	delay: WalkAnimation!.params.delay.value
+});
+
+skinViewer.dispose();
+```
+
+For local testing, this repository also provides an example Vite page at `examples/offscreen-render.html`.
+It calls a Vite plugin endpoint to render single frames or full animations on the backend and preview the result in the browser.
+
 ## Lighting
+
 By default, there are two lights on the scene. One is an ambient light, and the other is a point light from the camera.
 
 To change the light intensity:
+
 ```js
 skinViewer.cameraLight.intensity = 0.6;
 skinViewer.globalLight.intensity = 3;
@@ -94,11 +146,14 @@ Setting `globalLight.intensity` to `3.0` and `cameraLight.intensity` to `0.0`
 will completely disable shadows.
 
 ## Ears
+
 skinview3d supports two types of ear texture:
+
 * `standalone`: 14x7 image that contains the ear ([example](https://github.com/bs-community/skinview3d/blob/master/examples/public/img/ears.png))
-* `skin`: Skin texture that contains the ear (e.g. [deadmau5's skin](https://minecraft.wiki/w/Easter_eggs#deadmau5's_ears))
+* `skin`: Skin texture that contains the ear (e.g. [deadmau5&#39;s skin](https://minecraft.wiki/w/Easter_eggs#deadmau5's_ears))
 
 Usage:
+
 ```js
 // You can specify ears in the constructor:
 new skinview3d.SkinViewer({
@@ -123,7 +178,9 @@ skinViewer.loadEars("img/deadmau5.png", { textureType: "skin" });
 ```
 
 ## Name Tag
+
 Usage:
+
 ```js
 // Name tag with text "hello"
 skinViewer.nameTag = "hello";
@@ -140,6 +197,7 @@ In order to display name tags correctly, you need the `Minecraft` font from
 This font is available at [`assets/minecraft.woff2`](assets/minecraft.woff2).
 
 To load this font, please add the `@font-face` rule to your CSS:
+
 ```css
 @font-face {
 	font-family: 'Minecraft';
@@ -148,4 +206,5 @@ To load this font, please add the `@font-face` rule to your CSS:
 ```
 
 # Build
+
 `npm run build`

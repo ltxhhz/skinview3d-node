@@ -176,7 +176,7 @@ async function renderImg(body: RenderRequestBody): Promise<Buffer> {
 		viewer.camera.lookAt(new Vector3(0, 5, 0));
 		if (viewer.animation) {
 			if (progress !== null) {
-				return Buffer.from(viewer.renderAnimationFrame(progress,true)())
+				return viewer.renderAnimationFrame(progress,true)()
 			}
 			const frames = viewer.renderAnimationLoop(framesCount);
 			const arr: Uint8Array[] = [];

@@ -730,6 +730,8 @@ export class SkinViewer {
 		this.composer.render();
 	}
 
+	renderAnimationFrame(progress: number, binary?: false): (() => Uint8Array);
+	renderAnimationFrame(progress: number, binary: true): (() => Buffer);
 	renderAnimationFrame(progress: number, binary = false) {
 		if (this._animation == null) {
 			throw new Error('No animation.');
