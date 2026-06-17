@@ -9,12 +9,28 @@ skinview3d-node
 > 中文：
 > 这个 fork 基于上游 `skinview3d`，主要改造成适用于 Node.js 的后端/离屏渲染版本。相对上游，它将原本面向浏览器的渲染链路适配为基于 `skia-canvas` 和 headless WebGL 的后端实现，增加了单帧与动画的图片/缓冲区导出能力，并提供了可通过 Vite 接口在浏览器中测试后端渲染的示例页面。
 
+
 [![CI Status](https://img.shields.io/github/actions/workflow/status/bs-community/skinview3d-node/ci.yaml?branch=master&label=CI&logo=github&style=flat-square)](https://github.com/bs-community/skinview3d-node/actions?query=workflow:CI)
 [![NPM Package](https://img.shields.io/npm/v/skinview3d-node.svg?style=flat-square)](https://www.npmjs.com/package/skinview3d-node)
 [![MIT License](https://img.shields.io/badge/license-MIT-yellowgreen.svg?style=flat-square)](https://github.com/bs-community/skinview3d-node/blob/master/LICENSE)
 [![Gitter Chat](https://img.shields.io/gitter/room/TechnologyAdvice/Stardust.svg?style=flat-square)](https://gitter.im/skinview3d/Lobby)
 
 Three.js powered Minecraft skin viewer.
+
+## Examples / 输出示例
+
+以下图片为当前项目导出的实际动画示例：
+
+<p>
+  <img src="./imgs/1.gif" width="220" alt="swim animation" />
+  <img src="./imgs/2.gif" width="220" alt="rotate animation" />
+  <img src="./imgs/3.gif" width="220" alt="hit animation" />
+  <img src="./imgs/4.gif" width="220" alt="swim animation" />
+  <img src="./imgs/5.gif" width="220" alt="spinup animation" />
+	<img src="./imgs/6.gif" width="220" alt="run animation" />
+	<img src="./imgs/7.gif" width="220" alt="flail animation" />
+	<img src="./imgs/8.gif" width="220" alt="nod animation" />
+</p>
 
 # Features
 
