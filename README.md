@@ -147,6 +147,46 @@ skinViewer.dispose();
 For local testing, this repository also provides an example Vite page at `examples/offscreen-render.html`.
 It calls a Vite plugin endpoint to render single frames or full animations on the backend and preview the result in the browser.
 
+Run the standalone HTTP API from the isolated `docker-api/` project:
+
+```bash
+cd docker-api
+npm install
+npm run build
+npm run start
+```
+
+Health check:
+
+```bash
+curl http://127.0.0.1:3000/health
+```
+
+Render a single frame:
+
+```bash
+curl -X POST http://127.0.0.1:3000/render \
+	-H "content-type: application/json" \
+	--data "{\"skin\":null,\"animation\":\"swim\",\"progress\":0.25,\"useProgress\":true,\"frames\":60,\"view\":\"topLeftFront\",\"width\":300,\"height\":300}" \
+	-o out.png
+```
+
+Render a full animation GIF:
+
+```bash
+curl -X POST http://127.0.0.1:3000/render \
+	-H "content-type: application/json" \
+	--data "{\"skin\":null,\"animation\":\"swim\",\"useProgress\":false,\"frames\":60,\"view\":\"topLeftFront\",\"width\":300,\"height\":300}" \
+	-o out.gif
+```
+
+Run with Docker:
+
+```bash
+docker build -f docker-api/Dockerfile -t skinview3d-node-api .
+docker run --rm -p 3000:3000 skinview3d-node-api
+```
+
 ## Lighting
 
 By default, there are two lights on the scene. One is an ambient light, and the other is a point light from the camera.

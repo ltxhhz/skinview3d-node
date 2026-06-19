@@ -1,0 +1,3 @@
+allowBuilds:
+  gl: true
+  skia-canvas: true

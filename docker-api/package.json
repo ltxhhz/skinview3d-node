@@ -1,0 +1,23 @@
+{
+	"name": "skinview3d-node-api",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"build": "tsc -p .",
+		"start": "node dist/server.js"
+	},
+	"dependencies": {
+		"gl": "^8.1.6",
+		"koa": "^2.16.3",
+		"skia-canvas": "^3.0.8",
+		"skinview3d-node": "*",
+		"three": "^0.156.0"
+	},
+	"devDependencies": {
+		"@types/koa": "^2.15.0",
+		"@types/node": "^24.3.0",
+		"@types/three": "^0.156.0",
+		"@types/gl": "^6.0.5",
+		"typescript": "^5.0.4"
+	}
+}
