@@ -1,7 +1,7 @@
 import path from 'node:path';
 import fs from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
-import os from 'os';
+import os from 'node:os';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import type { Plugin } from 'vite';
 import {
@@ -35,6 +35,7 @@ interface RenderRequestBody {
 	cape?: string | null;
 	animation?: AnimationName;
 	progress?: number;
+	useProgress?: boolean;
 	width?: number;
 	height?: number;
 	fov?: number;
@@ -111,7 +112,6 @@ function getAnimation(name: AnimationName | undefined) {
 	}
 }
 
-
 export const FOV = {
   /** 上左前 */
   topLeftFront: new Vector3(25, 22, 25),
@@ -119,22 +119,65 @@ export const FOV = {
   topRightFront: new Vector3(-25, 22, 25),
   /** 上前 */
   topFront: new Vector3(0, 22, 25),
+
   /** 正前 */
   front: new Vector3(0, 10, 40),
   /** 左前 */
   leftFront: new Vector3(27, 10, 25),
   /** 右前 */
   rightFront: new Vector3(-27, 10, 25),
+
   /** 左 */
   left: new Vector3(40, 10, 0),
   /** 右 */
   right: new Vector3(-40, 10, 0),
+
+  /** 左后 */
+  leftBack: new Vector3(27, 10, -25),
+  /** 右后 */
+  rightBack: new Vector3(-27, 10, -25),
+  /** 正后 */
+  back: new Vector3(0, 10, -40),
+
+  /** 上左后 */
+  topLeftBack: new Vector3(25, 22, -25),
+  /** 上右后 */
+  topRightBack: new Vector3(-25, 22, -25),
+  /** 上后 */
+  topBack: new Vector3(0, 22, -25),
+
   /** 顶 */
-  top: new Vector3(0, 40, 0)
+  top: new Vector3(0, 40, 0),
+
+  /** 上左 */
+  topLeft: new Vector3(25, 22, 0),
+  /** 上右 */
+  topRight: new Vector3(-25, 22, 0),
+
+  /** 底 */
+  bottom: new Vector3(0, -40, 0),
+
+  /** 下前 */
+  bottomFront: new Vector3(0, -22, 25),
+  /** 下后 */
+  bottomBack: new Vector3(0, -22, -25),
+
+  /** 下左 */
+  bottomLeft: new Vector3(25, -22, 0),
+  /** 下右 */
+  bottomRight: new Vector3(-25, -22, 0),
+
+  /** 下左前 */
+  bottomLeftFront: new Vector3(25, -22, 25),
+  /** 下右前 */
+  bottomRightFront: new Vector3(-25, -22, 25),
+  /** 下左后 */
+  bottomLeftBack: new Vector3(25, -22, -25),
+  /** 下右后 */
+  bottomRightBack: new Vector3(-25, -22, -25),
 } as const
 
-
-async function renderImg(body: RenderRequestBody): Promise<Buffer> {
+async function renderImg(body: RenderRequestBody): Promise<{ buffer: Buffer; contentType: 'image/png' | 'image/gif' }> {
 	const width = clamp(Math.floor(body.width ?? 300), 64, 1024);
 	const height = clamp(Math.floor(body.height ?? 300), 64, 1024);
 	const framesCount = clamp(Math.floor(body.frames ?? 60), 10, 120);
@@ -148,11 +191,12 @@ async function renderImg(body: RenderRequestBody): Promise<Buffer> {
 		removeEventListener: () => {},
 		getContext: () => glContext
 	};
+
 	const progress = typeof body.progress === 'number' ? clamp(body.progress, 0, 1) : null;
+	const useProgress = body.useProgress !== false && progress !== null;
 	const skin = normalizeAssetPath(body.skin ?? 'img/hatsune_miku.png');
 	const cape = normalizeAssetPath(body.cape ?? null);
 	const Animation = getAnimation(body.animation);
-	console.log(body)
 	const viewer = new SkinViewer({
 		width,
 		height,
@@ -174,29 +218,39 @@ async function renderImg(body: RenderRequestBody): Promise<Buffer> {
 		const view = body.view && body.view in FOV ? FOV[body.view] : FOV.topLeftFront;
 		viewer.camera.position.copy(view);
 		viewer.camera.lookAt(new Vector3(0, 5, 0));
+
+		if (viewer.animation && useProgress) {
+			return {
+				buffer: viewer.renderAnimationFrame(progress, true)(),
+				contentType: 'image/png'
+			};
+		}
+
 		if (viewer.animation) {
-			if (progress !== null) {
-				return viewer.renderAnimationFrame(progress,true)()
-			}
 			const frames = viewer.renderAnimationLoop(framesCount);
-			const arr: Uint8Array[] = [];
-			frames.forEach((frame, i) => {
-				const buffer = frame();
-				arr.push(buffer);
-				// writeFileSync(`out/frame-${i}.png`, buffer)
-			});
-			const tmpgif = path.join(os.tmpdir(), 'skinview3d_tmp.gif');
+			const rgbaFrames: Uint8Array[] = [];
+			for (const frame of frames) {
+				rgbaFrames.push(frame());
+			}
+			const tmpGif = path.join(os.tmpdir(), 'skinview3d_tmp.gif');
 			await framesToGif({
 				width,
 				height,
-				frames: arr,
-				outputPath: tmpgif,
-				delay: Animation!.params.delay.value
+				frames: rgbaFrames,
+				outputPath: tmpGif,
+				delay: viewer.animation.params.delay
 			});
-			return fs.readFile(tmpgif);
+			return {
+				buffer: await fs.readFile(tmpGif),
+				contentType: 'image/gif'
+			};
 		}
+
 		viewer.render();
-		return viewer.toBuffer('png');
+		return {
+			buffer: viewer.toBuffer('png'),
+			contentType: 'image/png'
+		};
 	} finally {
 		viewer.dispose();
 	}
@@ -205,13 +259,12 @@ async function renderImg(body: RenderRequestBody): Promise<Buffer> {
 async function handleRender(req: IncomingMessage, res: ServerResponse): Promise<void> {
 	try {
 		const body = await parseJsonBody(req);
-		const png = await renderImg(body);
-		const contentType = typeof body.progress === 'number' || body.animation === 'none' || body.animation === undefined ? 'image/png' : 'image/gif';
+		const result = await renderImg(body);
 		res.statusCode = 200;
-		res.setHeader('Content-Type', contentType);
-		res.setHeader('Content-Length', png.byteLength);
+		res.setHeader('Content-Type', result.contentType);
+		res.setHeader('Content-Length', result.buffer.byteLength);
 		res.setHeader('Cache-Control', 'no-store');
-		res.end(png);
+		res.end(result.buffer);
 	} catch (error) {
 		const message = error instanceof Error ? error.message : 'Unknown render error';
 		res.statusCode = 500;

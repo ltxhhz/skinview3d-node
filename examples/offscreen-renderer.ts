@@ -2,7 +2,7 @@ import './style.css';
 import defaultPayload from './offscreen-render-default.json';
 
 type AnimationName = 'none' | 'idle' | 'walk' | 'run' | 'fly' | 'wave' | 'crouch' | 'hit' | 'swim' | 'spin' | 'rotate' | 'nod' | 'flail';
-type CameraView = 'topLeftFront' | 'topRightFront' | 'topFront' | 'front' | 'leftFront' | 'rightFront' | 'left' | 'right' | 'top';
+type CameraView = "left" | "right" | "topLeftFront" | "topRightFront" | "topFront" | "front" | "leftFront" | "rightFront" | "leftBack" | "rightBack" | "back" | "topLeftBack" | "topRightBack" | "topBack" | "top" | "topLeft" | "topRight" | "bottom" | "bottomFront" | "bottomBack" | "bottomLeft" | "bottomRight" | "bottomLeftFront" | "bottomRightFront" | "bottomLeftBack" | "bottomRightBack";
 
 interface RenderPayload {
 	skin: string;

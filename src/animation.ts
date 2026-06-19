@@ -46,7 +46,7 @@ export abstract class PlayerAnimation {
 		...defaultParams
 	};
 
-	// params: Record<string, number | string | boolean> = getParamsValue(PlayerAnimation.params);
+	params = getParamsValue(PlayerAnimation.params);
 	/**
 	 * 渲染某一帧的姿态
 	 * @param player 播放器对象
